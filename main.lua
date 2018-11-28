@@ -1,7 +1,9 @@
 local Entity = require 'src/Entity'
+local Card = require 'src/Card'
 
 -- Entity vars
 local entities
+local card
 
 -- Add a spawn function to the Entity class
 Entity.spawn = function(class, args)
@@ -14,7 +16,10 @@ function love.load()
   -- Initialize game vars
   entities = {}
   -- Spawn initial entities
-  -- TODO
+  card = Card:spawn({
+    x = 400,
+    y = 400
+  })
 end
 
 function love.update(dt)
@@ -43,6 +48,10 @@ end
 
 function love.mousepressed(x, y, button)
   if button == 1 then
-    -- TODO
+    if card:containsPoint(x, y) then
+      card.color = { 0, 1, 0, 1 }
+    else
+      card.color = { 1, 0, 0, 1 }
+    end
   end
 end
