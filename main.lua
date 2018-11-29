@@ -1,9 +1,11 @@
 local Entity = require 'src/Entity'
+local Hand = require 'src/Hand'
 local Card = require 'src/Card'
 
 -- Entity vars
 local entities
-local card
+local hand
+local cards
 
 -- Add a spawn function to the Entity class
 Entity.spawn = function(class, args)
@@ -12,13 +14,40 @@ Entity.spawn = function(class, args)
   return entity
 end
 
+function spawnCard(args)
+  local card = Card:spawn(args)
+  table.insert(cards, card)
+  return card
+end
+
+function removeDeadEntities(list)
+  local livingEntities = {}
+  for index, entity in ipairs(list) do
+    if entity.isAlive then
+      table.insert(livingEntities, entity)
+    end
+  end
+  return livingEntities
+end
+
 function love.load()
   -- Initialize game vars
   entities = {}
+  cards = {}
   -- Spawn initial entities
-  card = Card:spawn({
-    x = 400,
-    y = 400
+  hand = Hand:spawn({
+    x = 200,
+    y = 600
+  })
+  spawnCard({
+    x = 200,
+    y = 600,
+    value = '9'
+  })
+  spawnCard({
+    x = 100,
+    y = 700,
+    value = 'Q'
   })
 end
 
@@ -27,15 +56,11 @@ function love.update(dt)
   local index, entity
   for index, entity in ipairs(entities) do
     entity:update(dt)
+    entity:countDownToDeath(dt)
   end
   -- Remove dead entities
-  local remainingEntities = {}
-  for index, entity in ipairs(entities) do
-    if entity.isAlive then
-      table.insert(remainingEntities, entity)
-    end
-  end
-  entities = remainingEntities
+  entities = removeDeadEntities(entities)
+  cards = removeDeadEntities(cards)
 end
 
 function love.draw()
@@ -48,10 +73,11 @@ end
 
 function love.mousepressed(x, y, button)
   if button == 1 then
-    if card:containsPoint(x, y) then
-      card.color = { 0, 1, 0, 1 }
-    else
-      card.color = { 1, 0, 0, 1 }
+    local index, card
+    for index, card in ipairs(cards) do
+      if not card.isHeld and card:containsPoint(x, y) then
+        hand:addCard(card)
+      end
     end
   end
 end

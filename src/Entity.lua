@@ -7,6 +7,7 @@ local Entity = createClass({
   y = 0,
   vx = 0,
   vy = 0,
+  timeToDeath = 0,
   constructor = function(self) end,
   update = function(self, dt)
     self:applyVelocity(dt)
@@ -16,9 +17,23 @@ local Entity = createClass({
     self.x = self.x + self.vx * dt
     self.y = self.y + self.vy * dt
   end,
+  countDownToDeath = function(self, dt)
+    if self.timeToDeath > 0 then
+      self.timeToDeath = self.timeToDeath - dt
+      if self.timeToDeath <= 0 then
+        self:die()
+        return true
+      end
+    end
+    return false
+  end,
   die = function(self)
-    self.isAlive = false
-  end
+    if self.isAlive then
+      self.isAlive = false
+      self:onDeath()
+    end
+  end,
+  onDeath = function(self) end
 })
 
 return Entity
