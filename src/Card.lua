@@ -1,18 +1,24 @@
 local createClass = require 'src/createClass'
+local SpriteSheet = require 'src/SpriteSheet'
 local Entity = require 'src/Entity'
 
 local COLOR = { 1, 1, 1, 1 }
 local FONT = love.graphics.newFont(28)
 
--- This is the base class for all game entities
+local SPRITESHEET = SpriteSheet.new('img/cards.png', {
+  CARD_FRONT = { 1, 1, 23, 33 },
+  SUIT_HEART = { 25, 27, 9, 11 }
+})
+
 local Card = createClass({
-  width = 80,
-  height = 120,
-  rotation = 0, -- 0 is upright, increases clockwise to 360
+  width = 23,
+  height = 33,
+  rotation = 30, -- 0 is upright, increases clockwise to 360
   isHeld = false,
-  vx = 50,
-  vy = -400,
-  vr = 60,
+  vx = 0,
+  vy = 0,
+  vr = 30,
+  gravity = 0,
   constructor = function(self)
     self.shape = love.physics.newRectangleShape(self.width, self.height)
   end,
@@ -21,7 +27,7 @@ local Card = createClass({
       -- Rotate
       self.rotation = self.rotation + self.vr * dt
       -- Accelerate downwards
-      self.vy = self.vy + 200 * dt
+      self.vy = self.vy + self.gravity * dt
       self:applyVelocity(dt)
     end
   end,
@@ -30,12 +36,11 @@ local Card = createClass({
     local y = self.y
     local w = self.width / 2
     local h = self.height / 2
-    local c = math.cos(self.rotation * math.pi / 180)
-    local s = math.sin(self.rotation * math.pi / 180)
-    love.graphics.setColor(COLOR)
-    love.graphics.polygon('line', x+w*c+h*s, y-h*c+w*s, x-w*c+h*s, y-h*c-w*s, x-w*c-h*s, y+h*c-w*s, x+w*c-h*s, y+h*c+w*s)
-    love.graphics.setFont(FONT)
-    love.graphics.print(self.value, x - 10, y - 15)
+    local radians = self.rotation * math.pi / 180
+    local c = math.cos(radians)
+    local s = math.sin(radians)
+    SPRITESHEET:drawCentered('CARD_FRONT', self.x, self.y, self.rotation)
+    SPRITESHEET:drawCentered('SUIT_HEART', self.x, self.y, self.rotation)
   end,
   -- Checks to see if the point x,y is contained within this card
   containsPoint = function(self, x, y)

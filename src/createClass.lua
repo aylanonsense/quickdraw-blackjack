@@ -11,9 +11,15 @@ local function createClass(class, superClass)
     extend(class, superClass)
   end
   -- Add an instantiation function to the class
-  class.new = function(args)
-    local instance = extend(args, class)
-    instance:constructor()
+  class.new = function(...)
+    local args = {...}
+    local instance
+    if #args == 1 and type(args) == 'table' then
+      instance = extend(args[1], class)
+    else
+      instance = extend({}, class)
+    end
+    instance:constructor(...)
     return instance
   end
   -- Return the class

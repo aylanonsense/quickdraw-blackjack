@@ -1,83 +1,30 @@
-local Entity = require 'src/Entity'
-local Hand = require 'src/Hand'
-local Card = require 'src/Card'
-
--- Entity vars
-local entities
-local hand
-local cards
-
--- Add a spawn function to the Entity class
-Entity.spawn = function(class, args)
-  local entity = class.new(args)
-  table.insert(entities, entity)
-  return entity
-end
-
-function spawnCard(args)
-  local card = Card:spawn(args)
-  table.insert(cards, card)
-  return card
-end
-
-function removeDeadEntities(list)
-  local livingEntities = {}
-  for index, entity in ipairs(list) do
-    if entity.isAlive then
-      table.insert(livingEntities, entity)
-    end
-  end
-  return livingEntities
-end
+local constants = require 'src/constants'
+local game = require 'src/game'
 
 function love.load()
-  -- Initialize game vars
-  entities = {}
-  cards = {}
-  -- Spawn initial entities
-  hand = Hand:spawn({
-    x = 200,
-    y = 600
-  })
-  spawnCard({
-    x = 200,
-    y = 600,
-    value = '9'
-  })
-  spawnCard({
-    x = 100,
-    y = 700,
-    value = 'Q'
-  })
+  game.load()
 end
 
 function love.update(dt)
-  -- Update all entities
-  local index, entity
-  for index, entity in ipairs(entities) do
-    entity:update(dt)
-    entity:countDownToDeath(dt)
-  end
-  -- Remove dead entities
-  entities = removeDeadEntities(entities)
-  cards = removeDeadEntities(cards)
+  game.update(dt)
 end
 
 function love.draw()
-  -- Draw all entities
-  local index, entity
-  for index, entity in ipairs(entities) do
-    entity:draw()
-  end
+  love.graphics.setDefaultFilter('nearest', 'nearest')
+  -- Draw screen bounds
+  love.graphics.setColor(0, 1, 0, 1)
+  love.graphics.rectangle('line', 0, 0, constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT)
+  love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.rectangle('line', constants.RENDER_X, constants.RENDER_Y, constants.RENDER_WIDTH, constants.RENDER_HEIGHT)
+  -- Apply camera transformations
+  love.graphics.translate(constants.RENDER_X, constants.RENDER_Y)
+  love.graphics.scale(constants.RENDER_SCALE, constants.RENDER_SCALE)
+  -- Draw the game
+  game.draw()
 end
 
 function love.mousepressed(x, y, button)
   if button == 1 then
-    local index, card
-    for index, card in ipairs(cards) do
-      if not card.isHeld and card:containsPoint(x, y) then
-        hand:addCard(card)
-      end
-    end
+    game.onMousePressed((x - constants.RENDER_X) / constants.RENDER_SCALE, (y - constants.RENDER_Y) / constants.RENDER_SCALE)
   end
 end
