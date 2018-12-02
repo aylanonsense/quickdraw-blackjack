@@ -14,7 +14,7 @@ local function createClass(class, superClass)
   class.new = function(...)
     local args = {...}
     local instance
-    if #args == 1 and type(args) == 'table' then
+    if #args == 1 and type(args[1]) == 'table' then
       instance = extend(args[1], class)
     else
       instance = extend({}, class)

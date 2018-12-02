@@ -1,6 +1,7 @@
 local Entity = require 'src/Entity'
 local Hand = require 'src/Hand'
 local Card = require 'src/Card'
+local Promise = require 'src/Promise'
 
 -- Entity vars
 local entities
@@ -34,6 +35,33 @@ function load()
   -- Initialize game vars
   entities = {}
   cards = {}
+  -- Silly promise debugging
+  local promise1 = Promise.newActive(0.5)
+    :andThen(spawnCard, {
+      x = 50,
+      y = 50,
+      value = '4'
+    })
+  local promise2 = promise1
+    :andThen(0.2)
+  local promise3 = promise2
+    :andThen(function()
+      spawnCard({
+        x = 70,
+        y = 50,
+        value = '4'
+      })
+      return 1
+    end)
+  local promise4 = promise3
+    :andThen(function()
+      spawnCard({
+        x = 90,
+        y = 50,
+        value = '4'
+      })
+    end)
+  promise2:andThen(promise1.deactivate, promise1, true)
   -- Spawn initial entities
   hand = Hand:spawn({
     x = 50,
@@ -52,6 +80,8 @@ function load()
 end
 
 function update(dt)
+  -- Update all promises
+  Promise.updateActivePromises(dt)
   -- Update all entities
   local index, entity
   for index, entity in ipairs(entities) do
