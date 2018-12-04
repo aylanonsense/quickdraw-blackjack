@@ -1,5 +1,5 @@
 local constants = require 'src/constants'
-local createClass = require 'src/createClass'
+local createClass = require 'src/util/createClass'
 local Entity = require 'src/Entity'
 
 local COLOR = { 1, 1, 1, 1 }

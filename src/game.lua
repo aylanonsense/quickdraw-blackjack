@@ -23,6 +23,23 @@ local function spawnCard(args)
   return card
 end
 
+local function launchCard()
+  local startX = love.math.random(constants.GAME_LEFT, constants.GAME_RIGHT)
+  local minX = (startX < constants.GAME_LEFT + 0.2 * constants.GAME_WIDTH and 0.3 or 0.0) * constants.GAME_WIDTH + constants.GAME_LEFT
+  local maxX = (startX > constants.GAME_LEFT + 0.8 * constants.GAME_WIDTH and 0.7 or 1.0) * constants.GAME_WIDTH + constants.GAME_LEFT
+  local finalX = love.math.random(minX, maxX)
+  local launchHeight = (0.3 + 0.61 * love.math.random()) * constants.GAME_HEIGHT + 0.7 * constants.CARD_HEIGHT
+  local launchTime = 7.0 + 2.0 * love.math.random()
+  local card = spawnCard({
+    x = startX,
+    y = constants.GAME_BOTTOM + 0.7 * constants.CARD_HEIGHT,
+    vr = love.math.random(-300,300),
+    value = constants.CARD_VALUES[love.math.random(1, #constants.CARD_VALUES)],
+    suit = constants.CARD_SUITS[love.math.random(1, #constants.CARD_SUITS)],
+  })
+  card:launch(finalX - startX, -launchHeight, launchTime)
+end
+
 local function removeDeadEntities(list)
   return filterList(list, function(entity)
     return entity.isAlive
@@ -39,13 +56,11 @@ local function load()
     x = constants.GAME_LEFT + constants.CARD_WIDTH * 0.5 + 1, -- constants.GAME_MIDDLE_X,
     y = constants.GAME_BOTTOM - constants.CARD_HEIGHT * 0.35
   })
-  hand:addCard(spawnCard({ value = 'Q', suit = 'CLUBS' }))
-  spawnCard({
-    x = 100,
-    y = 100,
-    value = '2',
-    suit = 'SPADES'
-  })
+  -- hand:addCard(spawnCard({ value = 'Q', suit = 'CLUBS' }))
+  local i
+  for i = 1, 100 do
+    Promise.newActive(5.0 * love.math.random()):andThen(launchCard)
+  end
 end
 
 local function update(dt)

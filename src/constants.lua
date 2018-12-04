@@ -21,6 +21,8 @@ local RENDER_Y = (SCREEN_HEIGHT - RENDER_HEIGHT) / 2
 
 local CARD_WIDTH = 23
 local CARD_HEIGHT = 33
+local CARD_SUITS = { 'HEARTS', 'DIAMONDS', 'SPADES', 'CLUBS' }
+local CARD_VALUES = { '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A' }
 
 return {
   GAME_WIDTH = GAME_WIDTH,
@@ -39,5 +41,7 @@ return {
   RENDER_X = RENDER_X,
   RENDER_Y = RENDER_Y,
   CARD_WIDTH = CARD_WIDTH,
-  CARD_HEIGHT = CARD_HEIGHT
+  CARD_HEIGHT = CARD_HEIGHT,
+  CARD_SUITS = CARD_SUITS,
+  CARD_VALUES = CARD_VALUES
 }

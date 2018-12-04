@@ -1,5 +1,5 @@
 local constants = require 'src/constants'
-local createClass = require 'src/createClass'
+local createClass = require 'src/util/createClass'
 local SpriteSheet = require 'src/SpriteSheet'
 local Entity = require 'src/Entity'
 
@@ -30,12 +30,11 @@ local SPRITESHEET = SpriteSheet.new('img/cards.png', {
 local Card = createClass({
   width = constants.CARD_WIDTH,
   height = constants.CARD_HEIGHT,
-  rotation = 30, -- 0 is upright, increases clockwise to 360
+  rotation = 0, -- 0 is upright, increases clockwise to 360
   isHeld = false,
-  vx = 0,
-  vy = 0,
-  vr = 30,
+  vr = 0,
   gravity = 0,
+  frameRateIndependent = true,
   constructor = function(self)
     self.shape = love.physics.newRectangleShape(self.width, self.height)
   end,
@@ -60,6 +59,16 @@ local Card = createClass({
     SPRITESHEET:drawCentered('SUIT_'..self.suit, self.x, self.y, self.rotation)
     SPRITESHEET:draw('VALUE_'..self.value, self.x, self.y, self.rotation, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
     SPRITESHEET:draw('VALUE_'..self.value, self.x, self.y, self.rotation + 180, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
+  end,
+  -- Launch the card in an arc such that it travels dx pixels horizontally
+  --  and reaches a height of y + dy within the specified number of frames
+  launch = function(self, dx, dy, t)
+    -- At time = t/2, the card is at peak height (v = 4 * h / t)
+    self.vy = 4 * dy / t
+    -- At time = t/2, the card is at velocity = 0 (a = -2v / t)
+    self.gravity = -2 * self.vy / t
+    -- The card moves linearly horizontally, without acceleration (v = x / t)
+    self.vx = dx / t
   end,
   -- Checks to see if the point x,y is contained within this card
   containsPoint = function(self, x, y)

@@ -1,4 +1,4 @@
-local createClass = require 'src/createClass'
+local createClass = require 'src/util/createClass'
 
 -- This class makes it easy to draw parts of an image to the screen
 local SpriteSheet = createClass({

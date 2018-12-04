@@ -1,2 +1,0 @@
-function easeIn(percent)
-end

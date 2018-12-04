@@ -1,4 +1,4 @@
-local createClass = require 'src/createClass'
+local createClass = require 'src/util/createClass'
 
 -- This is the base class for all game entities
 local Entity = createClass({
@@ -7,15 +7,31 @@ local Entity = createClass({
   y = 0,
   vx = 0,
   vy = 0,
+  vxPrev = nil,
+  vyPrev = nil,
+  frameRateIndependent = false,
   timeToDeath = 0,
   constructor = function(self) end,
   update = function(self, dt)
     self:applyVelocity(dt)
   end,
   draw = function(self) end,
+  setVelocity = function(self, vx, y)
+    self.vx = vx
+    self.vy = vy
+    self.vxPrev = vx
+    self.vyPrev = vy
+  end,
   applyVelocity = function(self, dt)
-    self.x = self.x + self.vx * dt
-    self.y = self.y + self.vy * dt
+    if self.frameRateIndependent and self.vxPrev ~= nil and self.vyPrev ~= nil then
+      self.x = self.x + (self.vx + self.vxPrev) / 2 * dt
+      self.y = self.y + (self.vy + self.vyPrev) / 2 * dt
+    else
+      self.x = self.x + self.vx * dt
+      self.y = self.y + self.vy * dt
+    end
+    self.vxPrev = self.vx
+    self.vyPrev = self.vy
   end,
   countDownToDeath = function(self, dt)
     if self.timeToDeath > 0 then

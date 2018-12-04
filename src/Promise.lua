@@ -1,5 +1,5 @@
 local filterList = require 'src/util/filterList'
-local createClass = require 'src/createClass'
+local createClass = require 'src/util/createClass'
 
 -- This is an implementation for faux promises. They aren't actual promises--
 --  they can't reject or return data or anything like that--but they're useful
