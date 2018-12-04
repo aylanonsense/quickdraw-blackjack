@@ -1,0 +1,2 @@
+function easeIn(percent)
+end

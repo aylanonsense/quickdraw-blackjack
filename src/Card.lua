@@ -1,3 +1,4 @@
+local constants = require 'src/constants'
 local createClass = require 'src/createClass'
 local SpriteSheet = require 'src/SpriteSheet'
 local Entity = require 'src/Entity'
@@ -7,12 +8,28 @@ local FONT = love.graphics.newFont(28)
 
 local SPRITESHEET = SpriteSheet.new('img/cards.png', {
   CARD_FRONT = { 1, 1, 23, 33 },
-  SUIT_HEART = { 25, 27, 9, 11 }
+  SUIT_HEARTS = { 25, 27, 9, 11 },
+  SUIT_DIAMONDS = { 35, 27, 9, 11 },
+  SUIT_SPADES = { 45, 27, 9, 11 },
+  SUIT_CLUBS = { 55, 27, 9, 11 },
+  VALUE_2 = { 1, 39, 11, 9},
+  VALUE_3 = { 13, 39, 11, 9},
+  VALUE_4 = { 25, 39, 11, 9},
+  VALUE_5 = { 37, 39, 11, 9},
+  VALUE_6 = { 49, 39, 11, 9},
+  VALUE_7 = { 61, 39, 11, 9},
+  VALUE_8 = { 73, 39, 11, 9},
+  VALUE_9 = { 85, 39, 11, 9},
+  VALUE_10 = { 97, 39, 11, 9},
+  VALUE_J = { 109, 39, 11, 9},
+  VALUE_Q = { 121, 39, 11, 9},
+  VALUE_K = { 133, 39, 11, 9},
+  VALUE_A = { 145, 39, 11, 9}
 })
 
 local Card = createClass({
-  width = 23,
-  height = 33,
+  width = constants.CARD_WIDTH,
+  height = constants.CARD_HEIGHT,
   rotation = 30, -- 0 is upright, increases clockwise to 360
   isHeld = false,
   vx = 0,
@@ -40,7 +57,9 @@ local Card = createClass({
     local c = math.cos(radians)
     local s = math.sin(radians)
     SPRITESHEET:drawCentered('CARD_FRONT', self.x, self.y, self.rotation)
-    SPRITESHEET:drawCentered('SUIT_HEART', self.x, self.y, self.rotation)
+    SPRITESHEET:drawCentered('SUIT_'..self.suit, self.x, self.y, self.rotation)
+    SPRITESHEET:draw('VALUE_'..self.value, self.x, self.y, self.rotation, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
+    SPRITESHEET:draw('VALUE_'..self.value, self.x, self.y, self.rotation + 180, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
   end,
   -- Checks to see if the point x,y is contained within this card
   containsPoint = function(self, x, y)

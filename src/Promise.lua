@@ -1,3 +1,4 @@
+local filterList = require 'src/util/filterList'
 local createClass = require 'src/createClass'
 
 -- This is an implementation for faux promises. They aren't actual promises--
@@ -38,9 +39,13 @@ Promise = createClass({
     elseif type(handler) == 'function' then
       local args = {...}
       self.onActivate = function()
-        local timeToResolve = handler(unpack(args))
-        if type(timeToResolve) == 'number' then
-          self.timeToResolve = timeToResolve
+        local result = handler(unpack(args))
+        if type(result) == 'number' and result > 0.0 then
+          self.timeToResolve = result
+        elseif type(result) == 'table' and result.isPromise then
+          result:andThen(function()
+            self:resolve()
+          end)
         else
           self:resolve()
         end
