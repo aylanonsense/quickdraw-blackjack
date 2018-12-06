@@ -12,19 +12,19 @@ local SPRITESHEET = SpriteSheet.new('img/cards.png', {
   SUIT_DIAMONDS = { 35, 27, 9, 11 },
   SUIT_SPADES = { 45, 27, 9, 11 },
   SUIT_CLUBS = { 55, 27, 9, 11 },
-  VALUE_2 = { 1, 39, 11, 9},
-  VALUE_3 = { 13, 39, 11, 9},
-  VALUE_4 = { 25, 39, 11, 9},
-  VALUE_5 = { 37, 39, 11, 9},
-  VALUE_6 = { 49, 39, 11, 9},
-  VALUE_7 = { 61, 39, 11, 9},
-  VALUE_8 = { 73, 39, 11, 9},
-  VALUE_9 = { 85, 39, 11, 9},
-  VALUE_10 = { 97, 39, 11, 9},
-  VALUE_J = { 109, 39, 11, 9},
-  VALUE_Q = { 121, 39, 11, 9},
-  VALUE_K = { 133, 39, 11, 9},
-  VALUE_A = { 145, 39, 11, 9}
+  RANK_2 = { 1, 39, 11, 9},
+  RANK_3 = { 13, 39, 11, 9},
+  RANK_4 = { 25, 39, 11, 9},
+  RANK_5 = { 37, 39, 11, 9},
+  RANK_6 = { 49, 39, 11, 9},
+  RANK_7 = { 61, 39, 11, 9},
+  RANK_8 = { 73, 39, 11, 9},
+  RANK_9 = { 85, 39, 11, 9},
+  RANK_10 = { 97, 39, 11, 9},
+  RANK_J = { 109, 39, 11, 9},
+  RANK_Q = { 121, 39, 11, 9},
+  RANK_K = { 133, 39, 11, 9},
+  RANK_A = { 145, 39, 11, 9}
 })
 
 local Card = createClass({
@@ -57,8 +57,8 @@ local Card = createClass({
     local s = math.sin(radians)
     SPRITESHEET:drawCentered('CARD_FRONT', self.x, self.y, self.rotation)
     SPRITESHEET:drawCentered('SUIT_'..self.suit, self.x, self.y, self.rotation)
-    SPRITESHEET:draw('VALUE_'..self.value, self.x, self.y, self.rotation, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
-    SPRITESHEET:draw('VALUE_'..self.value, self.x, self.y, self.rotation + 180, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
+    SPRITESHEET:draw('RANK_'..self.rank, self.x, self.y, self.rotation, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
+    SPRITESHEET:draw('RANK_'..self.rank, self.x, self.y, self.rotation + 180, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
   end,
   -- Launch the card in an arc such that it travels dx pixels horizontally
   --  and reaches a height of y + dy within the specified number of frames

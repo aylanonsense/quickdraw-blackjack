@@ -4,6 +4,7 @@ local Entity = require 'src/Entity'
 local Hand = require 'src/Hand'
 local Card = require 'src/Card'
 local Promise = require 'src/Promise'
+local generateRound = require 'src/generateRound'
 
 -- Entity vars
 local entities
@@ -34,7 +35,7 @@ local function launchCard()
     x = startX,
     y = constants.GAME_BOTTOM + 0.7 * constants.CARD_HEIGHT,
     vr = love.math.random(-300,300),
-    value = constants.CARD_VALUES[love.math.random(1, #constants.CARD_VALUES)],
+    rank = constants.CARD_RANKS[love.math.random(1, #constants.CARD_RANKS)],
     suit = constants.CARD_SUITS[love.math.random(1, #constants.CARD_SUITS)],
   })
   card:launch(finalX - startX, -launchHeight, launchTime)
@@ -56,10 +57,21 @@ local function load()
     x = constants.GAME_LEFT + constants.CARD_WIDTH * 0.5 + 1, -- constants.GAME_MIDDLE_X,
     y = constants.GAME_BOTTOM - constants.CARD_HEIGHT * 0.35
   })
-  -- hand:addCard(spawnCard({ value = 'Q', suit = 'CLUBS' }))
-  local i
-  for i = 1, 100 do
-    Promise.newActive(5.0 * love.math.random()):andThen(launchCard)
+  local round = generateRound()
+  local index, cardProps
+  for index, cardProps in ipairs(round.hand) do
+    hand:addCard(spawnCard({
+      rank = cardProps.rank,
+      suit = cardProps.suit
+    }))
+  end
+  for index, cardProps in ipairs(round.cards) do
+    spawnCard({
+      rank = cardProps.rank,
+      suit = cardProps.suit,
+      x = 20 * index,
+      y = 30 * index
+    })
   end
 end
 

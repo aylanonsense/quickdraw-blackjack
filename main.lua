@@ -19,6 +19,9 @@ function love.draw()
   -- Apply camera transformations
   love.graphics.translate(constants.RENDER_X, constants.RENDER_Y)
   love.graphics.scale(constants.RENDER_SCALE, constants.RENDER_SCALE)
+  -- Draw card apex area
+  love.graphics.setColor(0, 0, 1, 1)
+  love.graphics.rectangle('line', constants.CARD_APEX_LEFT - 0.5 * constants.CARD_HEIGHT, constants.CARD_APEX_TOP - 0.5 * constants.CARD_HEIGHT, constants.CARD_APEX_RIGHT - constants.CARD_APEX_LEFT + constants.CARD_HEIGHT, constants.CARD_APEX_BOTTOM - constants.CARD_APEX_TOP + constants.CARD_HEIGHT)
   -- Draw the game
   game.draw()
 end
