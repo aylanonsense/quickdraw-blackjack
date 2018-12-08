@@ -30,8 +30,8 @@ end
 local function generateCard(suitIndex, rankIndex, cardLookup)
   cardLookup[suitIndex][rankIndex] = true
   return {
-    rank = constants.CARD_RANKS[rankIndex],
-    suit = constants.CARD_SUITS[suitIndex]
+    rankIndex = rankIndex,
+    suitIndex = suitIndex
   }
 end
 
@@ -61,7 +61,7 @@ local function generateRound()
   local numCards = 4
   local numCardsInPlay = 1
   local valueInPlay = 6
-  local numExtraCards = 5
+  local numExtraCards = 3
   local numCardsInHand = numCards - numCardsInPlay
   local valueInHand = 21 - valueInPlay
   -- Figure out the exact card values
