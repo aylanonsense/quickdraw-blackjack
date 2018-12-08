@@ -2,18 +2,20 @@ local constants = require 'src/constants'
 local listHelpers = require 'src/util/list'
 
 -- Generates a number of cards totaling the given value
-local function generateCardValueBundle(numCards, totalValue)
+local function generateCardValueBundle(numCards, totalValue, allowAces)
   -- Start with the lowest values
+  local minValue = allowAces and 1 or 2
+  local maxValue = allowAces and 11 or 10
   local cardValues = {}
   local i
   for i = 1, numCards do
-    cardValues[i] = 1
+    cardValues[i] = minValue
   end
   -- Keep adding until we're done
-  local valueSoFar = numCards
-  while valueSoFar < totalValue or valueSoFar >= 11 * numCards do
+  local valueSoFar = minValue * numCards
+  while valueSoFar < totalValue or valueSoFar == maxValue * numCards do
     local index = math.random(1, numCards)
-    local maxChange = math.min(totalValue - valueSoFar, 11 - cardValues[index])
+    local maxChange = math.min(totalValue - valueSoFar, maxValue - cardValues[index])
     if maxChange > 0 then
       local change = math.random(0, math.max(1, math.floor(maxChange / 2)))
       cardValues[index] = cardValues[index] + change
@@ -63,8 +65,8 @@ local function generateRound()
   local numCardsInHand = numCards - numCardsInPlay
   local valueInHand = 21 - valueInPlay
   -- Figure out the exact card values
-  local cardValuesInPlay = generateCardValueBundle(numCardsInPlay, valueInPlay)
-  local cardValuesInHand = generateCardValueBundle(numCardsInHand, valueInHand)
+  local cardValuesInPlay = generateCardValueBundle(numCardsInPlay, valueInPlay, true)
+  local cardValuesInHand = generateCardValueBundle(numCardsInHand, valueInHand, true)
   -- Generate card suits, trying to avoid duplicates
   local cardLookup = { {}, {}, {}, {} }
   local cardsInPlay = listHelpers.map(cardValuesInPlay, function(value)

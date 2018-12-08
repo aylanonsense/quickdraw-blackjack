@@ -21,7 +21,7 @@ local RENDER_Y = (SCREEN_HEIGHT - RENDER_HEIGHT) / 2
 
 local CARD_WIDTH = 23
 local CARD_HEIGHT = 33
-local CARD_SUITS = { 'HEARTS', 'DIAMONDS', 'SPADES', 'CLUBS' }
+local CARD_SUITS = { 'SPADES', 'CLUBS', 'HEARTS', 'DIAMONDS' }
 local CARD_RANKS = { '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A' }
 
 local CARD_APEX_TOP = GAME_TOP + 0.8 * CARD_HEIGHT

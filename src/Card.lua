@@ -8,23 +8,36 @@ local FONT = love.graphics.newFont(28)
 
 local SPRITESHEET = SpriteSheet.new('img/cards.png', {
   CARD_FRONT = { 1, 1, 23, 33 },
-  SUIT_HEARTS = { 25, 27, 9, 11 },
-  SUIT_DIAMONDS = { 35, 27, 9, 11 },
-  SUIT_SPADES = { 45, 27, 9, 11 },
-  SUIT_CLUBS = { 55, 27, 9, 11 },
-  RANK_2 = { 1, 39, 11, 9},
-  RANK_3 = { 13, 39, 11, 9},
-  RANK_4 = { 25, 39, 11, 9},
-  RANK_5 = { 37, 39, 11, 9},
-  RANK_6 = { 49, 39, 11, 9},
-  RANK_7 = { 61, 39, 11, 9},
-  RANK_8 = { 73, 39, 11, 9},
-  RANK_9 = { 85, 39, 11, 9},
-  RANK_10 = { 97, 39, 11, 9},
-  RANK_J = { 109, 39, 11, 9},
-  RANK_Q = { 121, 39, 11, 9},
-  RANK_K = { 133, 39, 11, 9},
-  RANK_A = { 145, 39, 11, 9}
+  SUIT = {
+    function(suitIndex)
+      return { 6 * suitIndex + 19, 27, 5, 5 }
+    end,
+    { 4 }
+  },
+  RANK = {
+    function(rankIndex, colorIndex)
+      return { 12 * rankIndex - 11, 10 * colorIndex + 25, 11, 9 }
+    end,
+    { 13, 2 }
+  },
+  PIPS = {
+    function(rankIndex, colorIndex)
+      return { 12 * rankIndex - 11, 14 * colorIndex + 41, 11, 13 }
+    end,
+    { 9, 2 }
+  },
+  FACES = {
+    function(rankIndex, suitIndex)
+      return { 13 * rankIndex - 12, 17 * suitIndex + 65, 12, 16 }
+    end,
+    { 3, 4 }
+  },
+  ACES = {
+    function(suitIndex)
+      return { 20 * suitIndex + 5, 1, 19, 25 }
+    end,
+    { 4 }
+  }
 })
 
 local Card = createClass({
@@ -35,7 +48,10 @@ local Card = createClass({
   vr = 0,
   gravity = 0,
   frameRateIndependent = true,
+  rankIndex = 13,
+  suitIndex = 2,
   constructor = function(self)
+    self.colorIndex = self.suitIndex < 3 and 1 or 2
     self.shape = love.physics.newRectangleShape(self.width, self.height)
   end,
   update = function(self, dt)
@@ -56,9 +72,21 @@ local Card = createClass({
     local c = math.cos(radians)
     local s = math.sin(radians)
     SPRITESHEET:drawCentered('CARD_FRONT', self.x, self.y, self.rotation)
-    SPRITESHEET:drawCentered('SUIT_'..self.suit, self.x, self.y, self.rotation)
-    SPRITESHEET:draw('RANK_'..self.rank, self.x, self.y, self.rotation, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
-    SPRITESHEET:draw('RANK_'..self.rank, self.x, self.y, self.rotation + 180, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
+    if self.rankIndex == 13 then
+      SPRITESHEET:drawCentered({ 'ACES', self.suitIndex }, self.x, self.y, self.rotation)
+    else
+      SPRITESHEET:draw({ 'RANK', self.rankIndex, self.colorIndex }, self.x, self.y, self.rotation, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
+      SPRITESHEET:draw({ 'RANK', self.rankIndex, self.colorIndex }, self.x, self.y, self.rotation + 180, -constants.CARD_WIDTH / 2 + 2, -constants.CARD_HEIGHT / 2 + 1)
+      SPRITESHEET:draw({ 'SUIT', self.suitIndex }, self.x, self.y, self.rotation, -constants.CARD_WIDTH / 2 + 3, -constants.CARD_HEIGHT / 2 + 11)
+      SPRITESHEET:draw({ 'SUIT', self.suitIndex }, self.x, self.y, self.rotation + 180, -constants.CARD_WIDTH / 2 + 3, -constants.CARD_HEIGHT / 2 + 11)
+      if self.rankIndex < 10 then
+        SPRITESHEET:draw({ 'PIPS', self.rankIndex, self.colorIndex }, self.x, self.y, self.rotation, -1.5, -12.5)
+        SPRITESHEET:draw({ 'PIPS', self.rankIndex, self.colorIndex }, self.x, self.y, self.rotation + 180, -1.5, -12.5)
+      else
+        SPRITESHEET:draw({ 'FACES', self.rankIndex - 9, self.suitIndex }, self.x, self.y, self.rotation, constants.CARD_WIDTH / 2 - 14, -constants.CARD_HEIGHT / 2)
+        SPRITESHEET:draw({ 'FACES', self.rankIndex - 9, self.suitIndex }, self.x, self.y, self.rotation + 180, constants.CARD_WIDTH / 2 - 14, -constants.CARD_HEIGHT / 2)
+      end
+    end
   end,
   -- Launch the card in an arc such that it travels dx pixels horizontally
   --  and reaches a height of y + dy within the specified number of frames

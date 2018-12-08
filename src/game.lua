@@ -57,20 +57,29 @@ local function load()
     x = constants.GAME_LEFT + constants.CARD_WIDTH * 0.5 + 1, -- constants.GAME_MIDDLE_X,
     y = constants.GAME_BOTTOM - constants.CARD_HEIGHT * 0.35
   })
-  local round = generateRound()
-  local index, cardProps
-  for index, cardProps in ipairs(round.hand) do
-    hand:addCard(spawnCard({
-      rank = cardProps.rank,
-      suit = cardProps.suit
-    }))
-  end
-  for index, cardProps in ipairs(round.cards) do
+  -- local round = generateRound()
+  -- local index, cardProps
+  -- for index, cardProps in ipairs(round.hand) do
+  --   hand:addCard(spawnCard({
+  --     rank = cardProps.rank,
+  --     suit = cardProps.suit
+  --   }))
+  -- end
+  -- for index, cardProps in ipairs(round.cards) do
+  --   spawnCard({
+  --     rank = cardProps.rank,
+  --     suit = cardProps.suit,
+  --     x = 20 * index,
+  --     y = 30 * index
+  --   })
+  -- end
+  local i
+  for i = 0, 29 do
     spawnCard({
-      rank = cardProps.rank,
-      suit = cardProps.suit,
-      x = 20 * index,
-      y = 30 * index
+      x = 12 + 25 * (i%5),
+      y = 20 + 35 * math.floor(i/5),
+      rankIndex = 1 + i % 13,
+      suitIndex = ({1,3,2,4})[1 + math.floor(i/13)]
     })
   end
 end
