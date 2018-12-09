@@ -4,6 +4,7 @@ local listHelpers = require 'src/util/list'
 local Promise = require 'src/util/Promise'
 local Entity = require 'src/entity/Entity'
 local PlayButton = require 'src/entity/PlayButton'
+local Title = require 'src/entity/Title'
 local Hand = require 'src/entity/Hand'
 local Card = require 'src/entity/Card'
 local RoundResults = require 'src/entity/RoundResults'
@@ -64,9 +65,13 @@ end
 -- Scene methods
 initTitleScreen = function()
   scene = 'title'
+  Title:spawn({
+    x = constants.GAME_WIDTH / 2,
+    y = constants.GAME_HEIGHT * 0.35
+  })
   playButton = PlayButton:spawn({
     x = constants.GAME_WIDTH / 2,
-    y = constants.GAME_HEIGHT * 0.7,
+    y = constants.GAME_HEIGHT * 0.75,
     onClicked = function(self)
       transitionToGameplay()
     end
@@ -198,6 +203,7 @@ local function draw()
   -- Draw all entities
   local index, entity
   for index, entity in ipairs(entities) do
+    love.graphics.setColor(1, 1, 1, 1)
     entity:draw()
   end
 end

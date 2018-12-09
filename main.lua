@@ -23,6 +23,7 @@ function love.draw()
   love.graphics.setColor(0, 0, 1, 1)
   love.graphics.rectangle('line', constants.CARD_APEX_LEFT - 0.5 * constants.CARD_HEIGHT, constants.CARD_APEX_TOP - 0.5 * constants.CARD_HEIGHT, constants.CARD_APEX_RIGHT - constants.CARD_APEX_LEFT + constants.CARD_HEIGHT, constants.CARD_APEX_BOTTOM - constants.CARD_APEX_TOP + constants.CARD_HEIGHT)
   -- Draw the game
+  love.graphics.setColor(1, 1, 1, 1)
   game.draw()
 end
 
