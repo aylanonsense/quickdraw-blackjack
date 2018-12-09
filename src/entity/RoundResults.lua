@@ -1,5 +1,5 @@
 local constants = require 'src/constants'
-local Entity = require 'src/Entity'
+local Entity = require 'src/entity/Entity'
 
 local RoundResults = Entity.extend({
   x = constants.GAME_WIDTH / 2,

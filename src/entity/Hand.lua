@@ -1,5 +1,5 @@
 local constants = require 'src/constants'
-local Entity = require 'src/Entity'
+local Entity = require 'src/entity/Entity'
 
 local COLOR = { 1, 1, 1, 1 }
 local FONT = love.graphics.newFont(28)

@@ -1,4 +1,4 @@
-local Entity = require 'src/Entity'
+local Entity = require 'src/entity/Entity'
 
 local PlayButton = Entity.extend({
   width = 33,

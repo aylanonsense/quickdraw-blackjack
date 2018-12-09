@@ -7,6 +7,18 @@ local function map(list, transformFunc)
   return transformedList
 end
 
+-- Filters a list so that only items that match the criteria function remain
+local function filter(list, criteriaFunc)
+  local filteredList = {}
+  for index, item in ipairs(list) do
+    if criteriaFunc(item, index) then
+      table.insert(filteredList, item)
+    end
+  end
+  return filteredList
+end
+
 return {
-  map = map
+  map = map,
+  filter = filter
 }

@@ -1,6 +1,6 @@
 local constants = require 'src/constants'
-local SpriteSheet = require 'src/SpriteSheet'
-local Entity = require 'src/Entity'
+local SpriteSheet = require 'src/util/SpriteSheet'
+local Entity = require 'src/entity/Entity'
 
 local COLOR = { 1, 1, 1, 1 }
 local FONT = love.graphics.newFont(28)

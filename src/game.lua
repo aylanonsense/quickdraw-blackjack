@@ -1,12 +1,12 @@
-local filterList = require 'src/util/filterList'
 local constants = require 'src/constants'
-local Entity = require 'src/Entity'
-local PlayButton = require 'src/PlayButton'
-local Hand = require 'src/Hand'
-local Card = require 'src/Card'
-local RoundResults = require 'src/RoundResults'
-local Promise = require 'src/Promise'
 local generateRound = require 'src/generateRound'
+local listHelpers = require 'src/util/list'
+local Promise = require 'src/util/Promise'
+local Entity = require 'src/entity/Entity'
+local PlayButton = require 'src/entity/PlayButton'
+local Hand = require 'src/entity/Hand'
+local Card = require 'src/entity/Card'
+local RoundResults = require 'src/entity/RoundResults'
 
 -- Scene vars
 local scene
@@ -56,7 +56,7 @@ local function launchCard()
 end
 
 local function removeDeadEntities(list)
-  return filterList(list, function(entity)
+  return listHelpers.filter(list, function(entity)
     return entity.isAlive
   end)
 end
