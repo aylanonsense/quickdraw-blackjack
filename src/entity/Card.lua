@@ -1,5 +1,6 @@
 local constants = require 'src/constants'
 local SpriteSheet = require 'src/util/SpriteSheet'
+local Promise = require 'src/util/Promise'
 local Entity = require 'src/entity/Entity'
 
 local COLOR = { 1, 1, 1, 1 }
@@ -43,28 +44,28 @@ local Card = Entity.extend({
   width = constants.CARD_WIDTH,
   height = constants.CARD_HEIGHT,
   rotation = 0, -- 0 is upright, increases clockwise to 360
-  isHeld = false,
   vr = 0,
   gravity = 0,
   frameRateIndependent = true,
   rankIndex = 13,
   suitIndex = 2,
+  canBeShot = false,
   constructor = function(self)
     Entity.constructor(self)
     self.colorIndex = self.suitIndex < 3 and 1 or 2
     self.shape = love.physics.newRectangleShape(self.width, self.height)
   end,
   update = function(self, dt)
-    if not self.isHeld then
-      -- Rotate
+    -- Rotate
+    if not self:animationsInclude('rotation') then
       self.rotation = self.rotation + self.vr * dt
-      -- Accelerate downwards
-      self.vy = self.vy + self.gravity * dt
-      self:applyVelocity(dt)
-      -- Fall offscreen
-      if self.y > constants.GAME_HEIGHT + constants.CARD_HEIGHT then
-        self:die()
-      end
+    end
+    -- Accelerate downwards
+    self.vy = self.vy + self.gravity * dt
+    Entity.update(self, dt)
+    -- Fall offscreen
+    if self.y > constants.GAME_HEIGHT + constants.CARD_HEIGHT then
+      self:die()
     end
   end,
   draw = function(self)
@@ -95,6 +96,7 @@ local Card = Entity.extend({
   -- Launch the card in an arc such that it travels dx pixels horizontally
   --  and reaches a height of y + dy within the specified number of frames
   launch = function(self, dx, dy, t)
+    self.canBeShot = true
     -- At time = t/2, the card is at peak height (v = 4 * h / t)
     self.vy = 4 * dy / t
     -- At time = t/2, the card is at velocity = 0 (a = -2v / t)
@@ -102,19 +104,39 @@ local Card = Entity.extend({
     -- The card moves linearly horizontally, without acceleration (v = x / t)
     self.vx = dx / t
   end,
+  -- Throws a card to a specified point
+  throw = function(self, x, y)
+    local dx = x - self.x
+    local dy = y - self.y
+    local dist = math.sqrt(dx * dx + dy * dy)
+    local startRotation = ((self.rotation % 360) + 360) % 360
+    local dr = (startRotation < 180 and -startRotation or 360 - startRotation)
+    local endRotation = self.rotation + dr
+    local duration = constants.TURBO_MODE and 0.1 or dist / 125
+    local slideDuration = 0.65 * duration
+    self:animate({
+      x = { change = 0.75 * dx },
+      y = { change = 0.75 * dy },
+      rotation = { change = 0.95 * dr }
+    }, duration - slideDuration)
+    Promise.newActive(duration - slideDuration)
+      :andThen(function()
+        self:animate({
+          x = { value = x, easing = 'easeIn' },
+          y = { value = y, easing = 'easeIn' },
+          rotation = { value = endRotation, easing = 'easeIn' }
+        }, slideDuration)
+      end)
+    return duration
+  end,
   -- Checks to see if the point x,y is contained within this card
   containsPoint = function(self, x, y)
     return self.shape:testPoint(self.x, self.y, self.rotation * math.pi / 180, x, y)
   end,
-  becomeHeld = function(self, hand, x, y)
-    self.x = x
-    self.y = y
-    self.rotation = 0
-    self.isHeld = true
-  end,
   onMousePressed = function(self, x, y)
-    if not self.isHeld and self:containsPoint(x, y) then
-      self.hand:addCard(self)
+    if self.canBeShot and self:containsPoint(x, y) then
+      self.canBeShot = false
+      self.hand:addShotCard(self)
     end
   end,
   getValue = function(self)

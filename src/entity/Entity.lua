@@ -27,14 +27,7 @@ local Entity = createClass({
     self.vyPrev = vy
   end,
   applyVelocity = function(self, dt)
-    local overiddenByAnimations = false
-    local index, animation
-    for index, animation in ipairs(self.animations) do
-      if animation.overridesMovement then
-        overiddenByAnimations = true
-      end
-    end
-    if not overiddenByAnimations then
+    if not self:animationsInclude('x') and not self:animationsInclude('y') then
       if self.frameRateIndependent and self.vxPrev ~= nil and self.vyPrev ~= nil then
         self.x = self.x + (self.vx + self.vxPrev) / 2 * dt
         self.y = self.y + (self.vy + self.vyPrev) / 2 * dt
@@ -58,6 +51,18 @@ local Entity = createClass({
       end
     end
     self.animations = animationsLeft
+  end,
+  cancelAnimations = function(self)
+    self.animations = {}
+  end,
+  animationsInclude = function(self, attr)
+    local index, animation
+    for index, animation in ipairs(self.animations) do
+      if animation.attributes[attr] then
+        return true
+      end
+    end
+    return false
   end,
   countDownToDeath = function(self, dt)
     if self.timeToDeath > 0 then
@@ -118,7 +123,7 @@ local Entity = createClass({
     local animation = {
       duration = duration,
       timeRemaining = duration,
-      overridesMovement = overridesMovement,
+      attributes = processedAttributes,
       apply = function(p)
         local attr, props
         for attr, props in pairs(processedAttributes) do

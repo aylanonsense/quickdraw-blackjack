@@ -14,7 +14,7 @@ local scene
 local isTransitioningScenes
 local initTitleScreen
 local transitionToGameplay
-local initGameplay
+local initRoundStart
 local transitionToRoundEnd
 local initRoundEnd
 
@@ -39,23 +39,6 @@ local function spawnCard(args)
   return card
 end
 
-local function launchCard()
-  local startX = love.math.random(constants.GAME_LEFT, constants.GAME_RIGHT)
-  local minX = (startX < constants.GAME_LEFT + 0.2 * constants.GAME_WIDTH and 0.3 or 0.0) * constants.GAME_WIDTH + constants.GAME_LEFT
-  local maxX = (startX > constants.GAME_LEFT + 0.8 * constants.GAME_WIDTH and 0.7 or 1.0) * constants.GAME_WIDTH + constants.GAME_LEFT
-  local finalX = love.math.random(minX, maxX)
-  local launchHeight = (0.3 + 0.61 * love.math.random()) * constants.GAME_HEIGHT + 0.7 * constants.CARD_HEIGHT
-  local launchTime = 7.0 + 2.0 * love.math.random()
-  local card = spawnCard({
-    x = startX,
-    y = constants.GAME_BOTTOM + 0.7 * constants.CARD_HEIGHT,
-    vr = love.math.random(-300,300),
-    rank = constants.CARD_RANKS[love.math.random(1, #constants.CARD_RANKS)],
-    suit = constants.CARD_SUITS[love.math.random(1, #constants.CARD_SUITS)],
-  })
-  card:launch(finalX - startX, -launchHeight, launchTime)
-end
-
 local function removeDeadEntities(list)
   return listHelpers.filter(list, function(entity)
     return entity.isAlive
@@ -66,19 +49,20 @@ end
 initTitleScreen = function()
   scene = 'title'
   Title:spawn({
-    x = constants.GAME_WIDTH / 2,
+    x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.35
   })
   playButton = PlayButton:spawn({
-    x = constants.GAME_WIDTH / 2,
+    x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.75,
     onClicked = function(self)
       transitionToGameplay()
     end
   })
-  playButton:animate({
-    x = { change = 50, easing = 'easeOutIn' }
-  }, 2.5)
+  -- Debug
+  if constants.TURBO_MODE then
+    transitionToGameplay()
+  end
 end
 
 transitionToGameplay = function()
@@ -87,42 +71,68 @@ transitionToGameplay = function()
     Promise.newActive(0)
       :andThen(function()
         isTransitioningScenes = false
-        initGameplay()
+        initRoundStart()
       end)
     end
 end
 
-initGameplay = function()
-  scene = 'gameplay'
-  hand = Hand:spawn({
-    x = constants.GAME_LEFT + constants.CARD_WIDTH * 0.5 + 1, -- constants.GAME_MIDDLE_X,
-    y = constants.GAME_BOTTOM - constants.CARD_HEIGHT * 0.35
-  })
+initRoundStart = function()
+  scene = 'round-start'
+  -- Generate a new round
   local round = generateRound()
+  -- Create hand of cards
+  local cardsInHand = {}
   local index, cardProps
   for index, cardProps in ipairs(round.hand) do
-    hand:addCard(spawnCard({
+    table.insert(cardsInHand, spawnCard({
       rankIndex = cardProps.rankIndex,
-      suitIndex = cardProps.suitIndex
+      suitIndex = cardProps.suitIndex,
+      x = constants.GAME_MIDDLE_X,
+      y = constants.GAME_TOP - 0.6 * constants.CARD_HEIGHT,
+      rotation = math.random(0, 360)
     }))
   end
-  local maxLaunchDuration = 5
-  local cards = {}
+  hand = Hand:spawn({
+    cards = cardsInHand
+  })
+  -- Create cards that'll be launched into the air
+  local cardsInPlay = {}
   for index, cardProps in ipairs(round.cards) do
-    local card = spawnCard({
+    table.insert(cardsInPlay, spawnCard({
       rankIndex = cardProps.rankIndex,
       suitIndex = cardProps.suitIndex,
       x = cardProps.x,
       y = cardProps.y,
-      vr = math.random(-80, 80)
-    })
-    local launchDuration = maxLaunchDuration - 0.3 * index
-    table.insert(cards, card)
-    Promise.newActive(1 + 0.3 * index):andThen(
-      function()
-        card:launch(cardProps.apexX - card.x, cardProps.apexY - card.y, launchDuration)
-      end)
+      vr = math.random(-80, 80),
+      hand = hand
+    }))
   end
+  -- Deal hand cards and then launch remaining cards
+  Promise.newActive(function()
+      return hand:dealCards()
+    end)
+    :andThen(0.7)
+    :andThen(function()
+      return hand:moveToBottom()
+    end)
+    :andThen(function()
+      local launchMult = constants.TURBO_MODE and 0.4 or 1.0
+      local index, card
+      for index, cardProps in ipairs(round.cards) do
+        local card = cardsInPlay[index]
+        Promise.newActive(launchMult * cardProps.launchDelay):andThen(
+          function()
+            card:launch(cardProps.apexX - card.x, cardProps.apexY - card.y, launchMult * cardProps.launchDuration)
+          end)
+      end
+      return launchMult * round.launchDuration
+    end)
+    :andThen(function()
+      return hand:moveToCenter()
+    end)
+    :andThen(function()
+      return hand:showShotCards()
+    end)
 end
 
 transitionToRoundEnd = function()
@@ -157,7 +167,7 @@ initRoundEnd = function()
     :andThen(function()
       entities = {}
       if isWinningHand then
-        initGameplay()
+        -- TODO
       else
         initTitleScreen()
       end
@@ -181,7 +191,7 @@ local function update(dt)
   -- Update all entities
   local index, entity
   for index, entity in ipairs(entities) do
-    if entity:checkScene(scene) then
+    if entity.isAlive and (isTransitioningScenes or entity:checkScene(scene)) then
       entity:update(dt)
       entity:countDownToDeath(dt)
     end
@@ -189,17 +199,6 @@ local function update(dt)
   -- Remove dead entities
   entities = removeDeadEntities(entities)
   cards = removeDeadEntities(cards)
-  -- Check for end of gameplay
-  local allCardsInHand = true
-  local card
-  for index, card in ipairs(cards) do
-    if not card.isHeld then
-      allCardsInHand = false
-    end
-  end
-  if allCardsInHand and scene == 'gameplay' then
-    transitionToRoundEnd()
-  end
 end
 
 local function draw()
@@ -214,7 +213,9 @@ end
 local function onMousePressed(x, y)
   local index, entity
   for index, entity in ipairs(entities) do
-    entity:onMousePressed(x, y)
+    if entity.isAlive then
+      entity:onMousePressed(x, y)
+    end
   end
 end
 

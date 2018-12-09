@@ -3,7 +3,7 @@ local function linear(p)
 end
 
 local function easeOut(p)
-  return p ^ 2
+  return p ^ 4
 end
 
 local function easeIn(p)

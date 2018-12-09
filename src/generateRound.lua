@@ -64,6 +64,7 @@ local function generateRound()
   local numExtraCards = 3
   local numCardsInHand = numCards - numCardsInPlay
   local valueInHand = 21 - valueInPlay
+  local launchDuration = 5
   -- Figure out the exact card values
   local cardValuesInPlay = generateCardValueBundle(numCardsInPlay, valueInPlay, true)
   local cardValuesInHand = generateCardValueBundle(numCardsInHand, valueInHand, true)
@@ -94,11 +95,14 @@ local function generateRound()
     cardProps.y = constants.GAME_BOTTOM + 0.7 * constants.CARD_HEIGHT
     cardProps.apexX = math.random(constants.CARD_APEX_LEFT, constants.CARD_APEX_RIGHT)
     cardProps.apexY = math.random(constants.CARD_APEX_TOP, constants.CARD_APEX_BOTTOM)
+    cardProps.launchDelay = 0.3 * (index - 1)
+    cardProps.launchDuration = launchDuration - cardProps.launchDelay
   end
   -- Return the round properties
   return {
     hand = cardsInHand,
-    cards = cardsInPlay
+    cards = cardsInPlay,
+    launchDuration = launchDuration
   }
 end
 
