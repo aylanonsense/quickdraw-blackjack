@@ -76,6 +76,9 @@ initTitleScreen = function()
       transitionToGameplay()
     end
   })
+  playButton:animate({
+    x = { change = 50, easing = 'easeOutIn' }
+  }, 2.5)
 end
 
 transitionToGameplay = function()

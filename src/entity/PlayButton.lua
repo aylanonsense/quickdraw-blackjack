@@ -10,6 +10,7 @@ local PlayButton = Entity.extend({
   height = 23,
   scenes = { 'title' },
   constructor = function(self)
+    Entity.constructor(self)
     self.shape = love.physics.newRectangleShape(self.width, self.height)
   end,
   draw = function(self)

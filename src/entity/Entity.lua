@@ -1,4 +1,5 @@
 local createClass = require 'src/util/createClass'
+local easingFunctions = require 'src/util/easing'
 
 -- This is the base class for all game entities
 local Entity = createClass({
@@ -11,9 +12,12 @@ local Entity = createClass({
   vyPrev = nil,
   frameRateIndependent = false,
   timeToDeath = 0,
-  constructor = function(self) end,
+  constructor = function(self)
+    self.animations = {}
+  end,
   update = function(self, dt)
     self:applyVelocity(dt)
+    self:applyAnimations(dt)
   end,
   draw = function(self) end,
   setVelocity = function(self, vx, y)
@@ -23,15 +27,37 @@ local Entity = createClass({
     self.vyPrev = vy
   end,
   applyVelocity = function(self, dt)
-    if self.frameRateIndependent and self.vxPrev ~= nil and self.vyPrev ~= nil then
-      self.x = self.x + (self.vx + self.vxPrev) / 2 * dt
-      self.y = self.y + (self.vy + self.vyPrev) / 2 * dt
-    else
-      self.x = self.x + self.vx * dt
-      self.y = self.y + self.vy * dt
+    local overiddenByAnimations = false
+    local index, animation
+    for index, animation in ipairs(self.animations) do
+      if animation.overridesMovement then
+        overiddenByAnimations = true
+      end
+    end
+    if not overiddenByAnimations then
+      if self.frameRateIndependent and self.vxPrev ~= nil and self.vyPrev ~= nil then
+        self.x = self.x + (self.vx + self.vxPrev) / 2 * dt
+        self.y = self.y + (self.vy + self.vyPrev) / 2 * dt
+      else
+        self.x = self.x + self.vx * dt
+        self.y = self.y + self.vy * dt
+      end
     end
     self.vxPrev = self.vx
     self.vyPrev = self.vy
+  end,
+  applyAnimations = function(self, dt)
+    local animationsLeft = {}
+    local index, animation
+    for index, animation in ipairs(self.animations) do
+      animation.timeRemaining = animation.timeRemaining - dt
+      local p = math.max(0, math.min(1 - (animation.timeRemaining / animation.duration), 1))
+      animation.apply(p)
+      if animation.timeRemaining > 0 then
+        table.insert(animationsLeft, animation)
+      end
+    end
+    self.animations = animationsLeft
   end,
   countDownToDeath = function(self, dt)
     if self.timeToDeath > 0 then
@@ -66,6 +92,48 @@ local Entity = createClass({
       end
     end
     return true
+  end,
+  animate = function(self, attributes, duration)
+    local processedAttributes = {}
+    local attr, props
+    local overridesMovement = false
+    for attr, props in pairs(attributes) do
+      local startValue = self[attr]
+      local endValue
+      if type(props.change) == 'number' then
+        endValue = startValue + props.change
+      else
+        endValue = props.value
+      end
+      if attr == 'x' or attr == 'y' then
+        overridesMovement = true
+      end
+      local easing = props.easing or 'linear'
+      processedAttributes[attr] = {
+        startValue = startValue,
+        endValue = endValue,
+        easing = type(easing) == 'string' and easingFunctions[easing] or easing
+      }
+    end
+    local animation = {
+      duration = duration,
+      timeRemaining = duration,
+      overridesMovement = overridesMovement,
+      apply = function(p)
+        local attr, props
+        for attr, props in pairs(processedAttributes) do
+          local p2 = props.easing(p)
+          self[attr] = props.endValue * p2 + props.startValue * (1 - p2)
+        end
+      end
+    }
+    if animation.duration > 0 then
+      table.insert(self.animations, animation)
+      animation.apply(0)
+    else
+      animation.apply(1)
+    end
+    return animation
   end
 })
 

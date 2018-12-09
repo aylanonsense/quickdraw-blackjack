@@ -50,6 +50,7 @@ local Card = Entity.extend({
   rankIndex = 13,
   suitIndex = 2,
   constructor = function(self)
+    Entity.constructor(self)
     self.colorIndex = self.suitIndex < 3 and 1 or 2
     self.shape = love.physics.newRectangleShape(self.width, self.height)
   end,

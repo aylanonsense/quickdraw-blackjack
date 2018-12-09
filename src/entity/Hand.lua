@@ -6,6 +6,7 @@ local FONT = love.graphics.newFont(28)
 
 local Hand = Entity.extend({
   constructor = function(self)
+    Entity.constructor(self)
     self.cards = {}
   end,
   update = function(self, dt)
