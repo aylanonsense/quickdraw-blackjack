@@ -5,10 +5,15 @@ local function extend(sub, super)
 end
 
 -- Create a new class from an object
-local function createClass(class, superClass)
+local createClass
+createClass = function(class, superClass)
   -- If there's a superclass, extend from it
   if superClass then
     extend(class, superClass)
+  end
+  -- Add an extend method
+  class.extend = function(subClass)
+    return createClass(subClass, class)
   end
   -- Add an instantiation function to the class
   class.new = function(...)

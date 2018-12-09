@@ -87,6 +87,14 @@ local function generateRound()
     end
     attemptsLeft = attemptsLeft - 1
   end
+  -- Set start points and apexes for each card
+  local index, cardProps
+  for index, cardProps in ipairs(cardsInPlay) do
+    cardProps.x = 20 * index
+    cardProps.y = constants.GAME_BOTTOM + 0.7 * constants.CARD_HEIGHT
+    cardProps.apexX = math.random(constants.CARD_APEX_LEFT, constants.CARD_APEX_RIGHT)
+    cardProps.apexY = math.random(constants.CARD_APEX_TOP, constants.CARD_APEX_BOTTOM)
+  end
   -- Return the round properties
   return {
     hand = cardsInHand,

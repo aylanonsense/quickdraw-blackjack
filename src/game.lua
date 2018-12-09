@@ -1,15 +1,28 @@
 local filterList = require 'src/util/filterList'
 local constants = require 'src/constants'
 local Entity = require 'src/Entity'
+local PlayButton = require 'src/PlayButton'
 local Hand = require 'src/Hand'
 local Card = require 'src/Card'
+local RoundResults = require 'src/RoundResults'
 local Promise = require 'src/Promise'
 local generateRound = require 'src/generateRound'
+
+-- Scene vars
+local scene
+local isTransitioningScenes
+local initTitleScreen
+local transitionToGameplay
+local initGameplay
+local transitionToRoundEnd
+local initRoundEnd
 
 -- Entity vars
 local entities
 local hand
 local cards
+local playButton
+local roundResults
 
 -- Entity methods
 Entity.spawn = function(class, args)
@@ -19,6 +32,7 @@ Entity.spawn = function(class, args)
 end
 
 local function spawnCard(args)
+  args.hand = hand
   local card = Card:spawn(args)
   table.insert(cards, card)
   return card
@@ -47,12 +61,31 @@ local function removeDeadEntities(list)
   end)
 end
 
--- Main methods
-local function load()
-  -- Initialize game vars
-  entities = {}
-  cards = {}
-  -- Spawn initial entities
+-- Scene methods
+initTitleScreen = function()
+  scene = 'title'
+  playButton = PlayButton:spawn({
+    x = constants.GAME_WIDTH / 2,
+    y = constants.GAME_HEIGHT * 0.7,
+    onClicked = function(self)
+      transitionToGameplay()
+    end
+  })
+end
+
+transitionToGameplay = function()
+  if not isTransitioningScenes then
+    isTransitioningScenes = true
+    Promise.newActive(0)
+      :andThen(function()
+        isTransitioningScenes = false
+        initGameplay()
+      end)
+    end
+end
+
+initGameplay = function()
+  scene = 'gameplay'
   hand = Hand:spawn({
     x = constants.GAME_LEFT + constants.CARD_WIDTH * 0.5 + 1, -- constants.GAME_MIDDLE_X,
     y = constants.GAME_BOTTOM - constants.CARD_HEIGHT * 0.35
@@ -65,23 +98,73 @@ local function load()
       suitIndex = cardProps.suitIndex
     }))
   end
+  local maxLaunchDuration = 5
+  local cards = {}
   for index, cardProps in ipairs(round.cards) do
-    Promise.newActive(0.3 * index):andThen(
+    local card = spawnCard({
+      rankIndex = cardProps.rankIndex,
+      suitIndex = cardProps.suitIndex,
+      x = cardProps.x,
+      y = cardProps.y,
+      vr = math.random(-80, 80)
+    })
+    local launchDuration = maxLaunchDuration - 0.3 * index
+    table.insert(cards, card)
+    Promise.newActive(1 + 0.3 * index):andThen(
       function()
-        local startY = constants.GAME_BOTTOM + constants.CARD_HEIGHT / 2
-        local startX = 20 * index
-        local card = spawnCard({
-          rankIndex = cardProps.rankIndex,
-          suitIndex = cardProps.suitIndex,
-          x = startX,
-          y = startY,
-          vr = math.random(-80, 80)
-        })
-        local apexX = math.random(constants.CARD_APEX_LEFT, constants.CARD_APEX_RIGHT)
-        local apexY = math.random(constants.CARD_APEX_TOP, constants.CARD_APEX_BOTTOM)
-        card:launch(apexX - startX, apexY - startY, 5 - 0.3 * index)
+        card:launch(cardProps.apexX - card.x, cardProps.apexY - card.y, launchDuration)
       end)
   end
+end
+
+transitionToRoundEnd = function()
+  if not isTransitioningScenes then
+    isTransitioningScenes = true
+    Promise.newActive(1)
+      :andThen(function()
+        isTransitioningScenes = false
+        initRoundEnd()
+      end)
+  end
+end
+
+initRoundEnd = function()
+  scene = 'round-end'
+  local handValue = hand:getSumValue()
+  local isWinningHand = (handValue == 21)
+  local result
+  if handValue == 21 and #hand.cards == 2 then
+    result = 'blackjack'
+  elseif handValue == 21 then
+    result = 'win'
+  elseif handValue > 21 then
+    result = 'bust'
+  else
+    result = 'miss'
+  end
+  roundResults = RoundResults:spawn({
+    result = result
+  })
+  Promise.newActive(1)
+    :andThen(function()
+      entities = {}
+      if isWinningHand then
+        initGameplay()
+      else
+        initTitleScreen()
+      end
+    end)
+end
+
+-- Main methods
+local function load()
+  scene = nil
+  isTransitioningScenes = false
+  -- Initialize game vars
+  entities = {}
+  cards = {}
+  -- Start at the title screen
+  initTitleScreen()
 end
 
 local function update(dt)
@@ -90,12 +173,25 @@ local function update(dt)
   -- Update all entities
   local index, entity
   for index, entity in ipairs(entities) do
-    entity:update(dt)
-    entity:countDownToDeath(dt)
+    if entity:checkScene(scene) then
+      entity:update(dt)
+      entity:countDownToDeath(dt)
+    end
   end
   -- Remove dead entities
   entities = removeDeadEntities(entities)
   cards = removeDeadEntities(cards)
+  -- Check for end of gameplay
+  local allCardsInHand = true
+  local card
+  for index, card in ipairs(cards) do
+    if not card.isHeld then
+      allCardsInHand = false
+    end
+  end
+  if allCardsInHand and scene == 'gameplay' then
+    transitionToRoundEnd()
+  end
 end
 
 local function draw()
@@ -107,12 +203,9 @@ local function draw()
 end
 
 local function onMousePressed(x, y)
-  -- Shoot cards
-  local index, card
-  for index, card in ipairs(cards) do
-    if not card.isHeld and card:containsPoint(x, y) then
-      hand:addCard(card)
-    end
+  local index, entity
+  for index, entity in ipairs(entities) do
+    entity:onMousePressed(x, y)
   end
 end
 

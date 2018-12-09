@@ -1,11 +1,10 @@
 local constants = require 'src/constants'
-local createClass = require 'src/util/createClass'
 local Entity = require 'src/Entity'
 
 local COLOR = { 1, 1, 1, 1 }
 local FONT = love.graphics.newFont(28)
 
-local Hand = createClass({
+local Hand = Entity.extend({
   constructor = function(self)
     self.cards = {}
   end,
@@ -20,7 +19,23 @@ local Hand = createClass({
     local y = self.y
     table.insert(self.cards, card)
     card:becomeHeld(self, x, y)
+  end,
+  getSumValue = function(self)
+    local sumValue = 0
+    local numUnusedAces = 0
+    local index, card
+    for index, card in ipairs(self.cards) do
+      if card.rankIndex == 13 then
+        numUnusedAces = numUnusedAces + 1
+      end
+      sumValue = sumValue + card:getValue()
+    end
+    while sumValue <= 11 and numUnusedAces > 0 do
+      numUnusedAces = numUnusedAces - 1
+      sumValue = sumValue + 10
+    end
+    return sumValue
   end
-}, Entity)
+})
 
 return Hand

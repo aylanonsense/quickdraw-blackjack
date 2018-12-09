@@ -1,5 +1,4 @@
 local constants = require 'src/constants'
-local createClass = require 'src/util/createClass'
 local SpriteSheet = require 'src/SpriteSheet'
 local Entity = require 'src/Entity'
 
@@ -40,7 +39,7 @@ local SPRITESHEET = SpriteSheet.new('img/cards.png', {
   }
 })
 
-local Card = createClass({
+local Card = Entity.extend({
   width = constants.CARD_WIDTH,
   height = constants.CARD_HEIGHT,
   rotation = 0, -- 0 is upright, increases clockwise to 360
@@ -61,6 +60,10 @@ local Card = createClass({
       -- Accelerate downwards
       self.vy = self.vy + self.gravity * dt
       self:applyVelocity(dt)
+      -- Fall offscreen
+      if self.y > constants.GAME_HEIGHT + constants.CARD_HEIGHT then
+        self:die()
+      end
     end
   end,
   draw = function(self)
@@ -107,7 +110,21 @@ local Card = createClass({
     self.y = y
     self.rotation = 0
     self.isHeld = true
+  end,
+  onMousePressed = function(self, x, y)
+    if not self.isHeld and self:containsPoint(x, y) then
+      self.hand:addCard(self)
+    end
+  end,
+  getValue = function(self)
+    if self.rankIndex < 10 then
+      return self.rankIndex + 1
+    elseif self.rankIndex == 13 then
+      return 1
+    else
+      return 10
+    end
   end
-}, Entity)
+})
 
 return Card
