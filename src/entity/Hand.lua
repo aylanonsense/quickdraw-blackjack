@@ -76,18 +76,39 @@ local Hand = Entity.extend({
           end)
       end
     end
+    return constants.TURBO_MODE and 0.1 or 1.5
   end,
-  -- addCard = function(self, card)
-  --   local x = self.x + (constants.CARD_WIDTH + 1) * #self.cards
-  --   local y = self.y
-  --   table.insert(self.cards, card)
-  --   card:becomeHeld(self, x, y)
-  -- end,
+  explode = function(self)
+    local index, card
+    for index, card in ipairs(self.cards) do
+      self:explodeCard(card)
+    end
+    for index, card in ipairs(self.shotCards) do
+      self:explodeCard(card)
+    end
+    return 2.0
+  end,
+  explodeCard = function(self, card)
+    local dx = card.x - constants.GAME_MIDDLE_X + math.random(-10, 10)
+    local dy = card.y - constants.GAME_MIDDLE_Y - constants.CARD_HEIGHT + math.random(-10, 10)
+    local dist = math.max(1, math.sqrt(dx * dx + dy * dy))
+    local speed = 275
+    card.vx = speed / 2 * dx / dist
+    card.vy = speed * dy / dist
+    card.vr = math.random(-200, 200)
+    card.gravity = 500
+  end,
   getSumValue = function(self)
     local sumValue = 0
     local numUnusedAces = 0
     local index, card
     for index, card in ipairs(self.cards) do
+      if card.rankIndex == 13 then
+        numUnusedAces = numUnusedAces + 1
+      end
+      sumValue = sumValue + card:getValue()
+    end
+    for index, card in ipairs(self.shotCards) do
       if card.rankIndex == 13 then
         numUnusedAces = numUnusedAces + 1
       end

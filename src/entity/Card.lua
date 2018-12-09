@@ -96,7 +96,6 @@ local Card = Entity.extend({
   -- Launch the card in an arc such that it travels dx pixels horizontally
   --  and reaches a height of y + dy within the specified number of frames
   launch = function(self, dx, dy, t)
-    self.canBeShot = true
     -- At time = t/2, the card is at peak height (v = 4 * h / t)
     self.vy = 4 * dy / t
     -- At time = t/2, the card is at velocity = 0 (a = -2v / t)

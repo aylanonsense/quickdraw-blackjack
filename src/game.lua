@@ -8,6 +8,7 @@ local Title = require 'src/entity/Title'
 local Hand = require 'src/entity/Hand'
 local Card = require 'src/entity/Card'
 local RoundResults = require 'src/entity/RoundResults'
+local ScoreCalculation = require 'src/entity/ScoreCalculation'
 
 -- Scene vars
 local scene
@@ -122,6 +123,7 @@ initRoundStart = function()
         local card = cardsInPlay[index]
         Promise.newActive(launchMult * cardProps.launchDelay):andThen(
           function()
+            card.canBeShot = true
             card:launch(cardProps.apexX - card.x, cardProps.apexY - card.y, launchMult * cardProps.launchDuration)
           end)
       end
@@ -132,6 +134,21 @@ initRoundStart = function()
     end)
     :andThen(function()
       return hand:showShotCards()
+    end)
+    :andThen(function()
+      local scoreCalculation = ScoreCalculation:spawn({
+        score = hand:getSumValue(),
+        x = constants.GAME_MIDDLE_X,
+        y = constants.GAME_MIDDLE_Y - constants.CARD_HEIGHT / 2 - 17
+      })
+      return Promise.newActive(1.0)
+        :andThen(function()
+          scoreCalculation:showScore()
+        end)
+    end)
+    :andThen(function()
+      RoundResults:spawn({})
+      return hand:explode()
     end)
 end
 
@@ -192,6 +209,7 @@ local function update(dt)
   local index, entity
   for index, entity in ipairs(entities) do
     if entity.isAlive and (isTransitioningScenes or entity:checkScene(scene)) then
+      entity.timeAlive = entity.timeAlive + dt
       entity:update(dt)
       entity:countDownToDeath(dt)
     end

@@ -1,12 +1,16 @@
 local constants = require 'src/constants'
 local Entity = require 'src/entity/Entity'
+local SpriteSheet = require 'src/util/SpriteSheet'
+
+local SPRITESHEET = SpriteSheet.new('img/ui.png', {
+  BUST = { 1, 95, 59, 22 }
+})
 
 local RoundResults = Entity.extend({
   x = constants.GAME_WIDTH / 2,
   y = constants.GAME_HEIGHT / 2,
   draw = function(self)
-    love.graphics.setColor(0, 1, 0, 1)
-    love.graphics.rectangle('line', self.x - 30 / 2, self.y - 30 / 2, 30, 30)
+    SPRITESHEET:drawCentered('BUST', self.x, self.y)
   end
 })
 

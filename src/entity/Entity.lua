@@ -12,6 +12,7 @@ local Entity = createClass({
   vyPrev = nil,
   frameRateIndependent = false,
   timeToDeath = 0,
+  timeAlive = 0,
   constructor = function(self)
     self.animations = {}
   end,
