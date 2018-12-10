@@ -22,7 +22,6 @@ local initRoundEnd
 -- Entity vars
 local entities
 local hand
-local cards
 local playButton
 local roundResults
 
@@ -31,13 +30,6 @@ Entity.spawn = function(class, args)
   local entity = class.new(args)
   table.insert(entities, entity)
   return entity
-end
-
-local function spawnCard(args)
-  args.hand = hand
-  local card = Card:spawn(args)
-  table.insert(cards, card)
-  return card
 end
 
 local function removeDeadEntities(list)
@@ -85,7 +77,7 @@ initRoundStart = function()
   local cardsInHand = {}
   local index, cardProps
   for index, cardProps in ipairs(round.hand) do
-    table.insert(cardsInHand, spawnCard({
+    table.insert(cardsInHand, Card:spawn({
       rankIndex = cardProps.rankIndex,
       suitIndex = cardProps.suitIndex,
       x = constants.GAME_MIDDLE_X,
@@ -99,7 +91,7 @@ initRoundStart = function()
   -- Create cards that'll be launched into the air
   local cardsInPlay = {}
   for index, cardProps in ipairs(round.cards) do
-    table.insert(cardsInPlay, spawnCard({
+    table.insert(cardsInPlay, Card:spawn({
       rankIndex = cardProps.rankIndex,
       suitIndex = cardProps.suitIndex,
       x = cardProps.x,
@@ -146,9 +138,31 @@ initRoundStart = function()
           scoreCalculation:showScore()
         end)
     end)
+    :andThen(0.6)
     :andThen(function()
-      RoundResults:spawn({})
-      return hand:explode()
+      local value = hand:getSumValue()
+      local result
+      if value == 21 then
+        result = 'blackjack'
+      elseif value < 21 then
+        result = 'miss'
+      elseif value > 21 then
+        result = 'bust'
+      end
+      RoundResults:spawn({
+        result = result
+      })
+      hand:explode(value == 21 and 3 or 1)
+    end)
+    :andThen(2.0)
+    :andThen(function()
+      local value = hand:getSumValue()
+      entities = {}
+      if value == 21 then
+        initRoundStart()
+      else
+        initTitleScreen()
+      end
     end)
 end
 
@@ -197,7 +211,6 @@ local function load()
   isTransitioningScenes = false
   -- Initialize game vars
   entities = {}
-  cards = {}
   -- Start at the title screen
   initTitleScreen()
 end
@@ -216,7 +229,6 @@ local function update(dt)
   end
   -- Remove dead entities
   entities = removeDeadEntities(entities)
-  cards = removeDeadEntities(cards)
 end
 
 local function draw()

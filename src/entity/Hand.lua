@@ -78,21 +78,21 @@ local Hand = Entity.extend({
     end
     return constants.TURBO_MODE and 0.1 or 1.5
   end,
-  explode = function(self)
+  explode = function(self, force)
     local index, card
     for index, card in ipairs(self.cards) do
-      self:explodeCard(card)
+      self:explodeCard(card, force)
     end
     for index, card in ipairs(self.shotCards) do
-      self:explodeCard(card)
+      self:explodeCard(card, force)
     end
     return 2.0
   end,
-  explodeCard = function(self, card)
+  explodeCard = function(self, card, force)
     local dx = card.x - constants.GAME_MIDDLE_X + math.random(-10, 10)
     local dy = card.y - constants.GAME_MIDDLE_Y - constants.CARD_HEIGHT + math.random(-10, 10)
     local dist = math.max(1, math.sqrt(dx * dx + dy * dy))
-    local speed = 275
+    local speed = force * 100
     card.vx = speed / 2 * dx / dist
     card.vy = speed * dy / dist
     card.vr = math.random(-200, 200)
