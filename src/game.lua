@@ -9,6 +9,7 @@ local Hand = require 'src/entity/Hand'
 local Card = require 'src/entity/Card'
 local RoundResults = require 'src/entity/RoundResults'
 local ScoreCalculation = require 'src/entity/ScoreCalculation'
+local RoundIndicator = require 'src/entity/RoundIndicator'
 
 -- Scene vars
 local scene
@@ -24,6 +25,7 @@ local entities
 local hand
 local playButton
 local roundResults
+local roundNumber
 
 -- Entity methods
 Entity.spawn = function(class, args)
@@ -41,6 +43,7 @@ end
 -- Scene methods
 initTitleScreen = function()
   scene = 'title'
+  roundNumber = 1
   Title:spawn({
     x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.35
@@ -71,6 +74,9 @@ end
 
 initRoundStart = function()
   scene = 'round-start'
+  RoundIndicator:spawn({
+    roundNumber = roundNumber
+  })
   -- Generate a new round
   local round = generateRound()
   -- Create hand of cards
@@ -159,6 +165,7 @@ initRoundStart = function()
       local value = hand:getSumValue()
       entities = {}
       if value == 21 then
+        roundNumber = roundNumber + 1
         initRoundStart()
       else
         initTitleScreen()
