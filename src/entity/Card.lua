@@ -2,6 +2,8 @@ local constants = require 'src/constants'
 local SpriteSheet = require 'src/util/SpriteSheet'
 local Promise = require 'src/util/Promise'
 local Entity = require 'src/entity/Entity'
+local CardExplosion = require 'src/entity/CardExplosion'
+local Gunshot = require 'src/entity/Gunshot'
 
 local COLOR = { 1, 1, 1, 1 }
 local FONT = love.graphics.newFont(28)
@@ -135,6 +137,15 @@ local Card = Entity.extend({
   onMousePressed = function(self, x, y)
     if self.canBeShot and self:containsPoint(x, y) then
       self.canBeShot = false
+      CardExplosion:spawn({
+        x = self.x,
+        y = self.y,
+        rotation = self.rotation
+      })
+      Gunshot:spawn({
+        x = x,
+        y = y
+      })
       self.hand:addShotCard(self)
     end
   end,
