@@ -1,6 +1,103 @@
 local constants = require 'src/constants'
 local listHelpers = require 'src/util/list'
 
+local function generateRoundDifficulty(roundNumber)
+  local allowAces = (roundNumber > 4)
+  local launchDuration = 3 + (33 / (10 + roundNumber))
+  -- Figure out cards in play
+  local minValueInPlay = 2
+  local maxValueInPlay = math.min(4 + roundNumber, 20)
+  local valueInPlay = math.random(minValueInPlay, maxValueInPlay)
+  local numCardsInPlay
+  if valueInPlay <= 5 then
+    -- 2 to 5  points in play
+    numCardsInPlay = roundNumber < 8 and 1 or math.random(1, 2)
+  elseif valueInPlay <= 10 then
+    -- 5 to 10 points in play
+    if roundNumber < 5 then
+      numCardsInPlay = 1
+    elseif roundNumber < 10 then
+      numCardsInPlay = math.random(1, 2)
+    else
+      numCardsInPlay = math.random(1, 3)
+    end
+  elseif valueInPlay <= 15 then
+    -- 11 to 15 points in play
+    if roundNumber < 10 then
+      numCardsInPlay = 2
+    elseif roundNumber < 15 then
+      numCardsInPlay = math.random(2, 3)
+    else
+      numCardsInPlay = math.random(2, 4)
+    end
+  else
+    -- 16 to 20 ponts in play
+    if roundNumber < 15 then
+      numCardsInPlay = math.random(2, 3)
+    else
+      numCardsInPlay = math.random(2, 4)
+    end
+  end
+  -- Figure out cards in hand
+  local valueInHand = 21 - valueInPlay
+  local numCardsInHand
+  if valueInHand <= 3 then
+    -- 1 to 3 points in hand
+    numCardsInHand = 1
+  elseif valueInHand <= 8 then
+    -- 4 to 8 points in hand
+    numCardsInHand = math.random(1, 2)
+  elseif valueInHand <= 10 then
+    -- 9 to 10 points in hand
+    if roundNumber < 15 then
+      numCardsInHand = math.random(1, 3)
+    else
+      numCardsInHand = math.random(2, 3)
+    end
+  elseif valueInHand <= 13 then
+    -- 11 to 13 points in hand
+    numCardsInHand = math.random(2, 3)
+  else
+    -- 14 to 19 points in hand
+    if roundNumber < 6 then
+      numCardsInHand = 2
+    elseif roundNumber < 10 then
+      numCardsInHand = math.random(2, 3)
+    elseif roundNumber < 15 then
+      numCardsInHand = math.random(2, 4)
+    else
+      numCardsInHand = math.random(3, 4)
+    end
+  end
+  -- Figure out extra cards
+  local numExtraCards
+  if roundNumber == 1 then
+    numExtraCards = 1
+  elseif roundNumber <= 3 then
+    numExtraCards = 2
+  elseif roundNumber <= 8 then
+    numExtraCards = math.random(2, 3)
+  elseif roundNumber <= 12 then
+    numExtraCards = math.random(2, 4)
+  elseif roundNumber <= 16 then
+    numExtraCards = math.random(3, 5)
+  elseif roundNumber <= 20 then
+    numExtraCards = math.random(4, 6)
+  else
+    numExtraCards = math.random(4, 7)
+  end
+  -- Return the difficulty properties
+  return {
+    allowAces = allowAces,
+    launchDuration = launchDuration,
+    numCardsInHand = numCardsInHand,
+    valueInHand = valueInHand,
+    numCardsInPlay = numCardsInPlay,
+    numExtraCards = numExtraCards,
+    valueInPlay = valueInPlay
+  }
+end
+
 -- Generates a number of cards totaling the given value
 local function generateCardValueBundle(numCards, totalValue, allowAces)
   -- Start with the lowest values
@@ -56,18 +153,19 @@ local function generateCardFromValue(value, cardLookup)
   return generateCard(suitIndex, rankIndex, cardLookup)
 end
 
-local function generateRound()
+local function generateRound(roundNumber)
+  local difficulty = generateRoundDifficulty(roundNumber)
   -- Figure out how many cards are where
-  local numCards = 4
-  local numCardsInPlay = 1
-  local valueInPlay = 6
-  local numExtraCards = 3
-  local numCardsInHand = numCards - numCardsInPlay
-  local valueInHand = 21 - valueInPlay
-  local launchDuration = 5
+  local numCardsInPlay = difficulty.numCardsInPlay
+  local valueInPlay = difficulty.valueInPlay
+  local numExtraCards = difficulty.numExtraCards
+  local numCardsInHand = difficulty.numCardsInHand
+  local valueInHand = difficulty.valueInHand
+  local launchDuration = difficulty.launchDuration
+  local allowAces = difficulty.allowAces
   -- Figure out the exact card values
-  local cardValuesInPlay = generateCardValueBundle(numCardsInPlay, valueInPlay, true)
-  local cardValuesInHand = generateCardValueBundle(numCardsInHand, valueInHand, true)
+  local cardValuesInPlay = generateCardValueBundle(numCardsInPlay, valueInPlay, allowAces)
+  local cardValuesInHand = generateCardValueBundle(numCardsInHand, valueInHand, allowAces)
   -- Generate card suits, trying to avoid duplicates
   local cardLookup = { {}, {}, {}, {} }
   local cardsInPlay = listHelpers.map(cardValuesInPlay, function(value)

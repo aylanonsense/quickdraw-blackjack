@@ -78,7 +78,7 @@ initRoundStart = function()
     roundNumber = roundNumber
   })
   -- Generate a new round
-  local round = generateRound()
+  local round = generateRound(roundNumber)
   -- Create hand of cards
   local cardsInHand = {}
   local index, cardProps
