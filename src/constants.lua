@@ -1,5 +1,5 @@
 -- Game dimensions are display-independent (i.e. not pixel-based)
-local GAME_WIDTH = 125
+local GAME_WIDTH = 225
 local GAME_HEIGHT = 220
 local GAME_LEFT = 0
 local GAME_RIGHT = GAME_WIDTH
@@ -9,7 +9,7 @@ local GAME_MIDDLE_X = GAME_WIDTH / 2
 local GAME_MIDDLE_Y = GAME_HEIGHT / 2
 
 -- Screen dimensions are hardware-based (what's the size of the display device)
-local SCREEN_WIDTH = 400
+local SCREEN_WIDTH = 900
 local SCREEN_HEIGHT = 700
 
 -- Render dimenisions reflect how the game should be drawn to the canvas

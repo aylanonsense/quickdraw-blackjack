@@ -14,25 +14,25 @@ local function generateRoundDifficulty(roundNumber)
     numCardsInPlay = roundNumber < 8 and 1 or math.random(1, 2)
   elseif valueInPlay <= 10 then
     -- 5 to 10 points in play
-    if roundNumber < 5 then
+    if roundNumber < 3 then
       numCardsInPlay = 1
-    elseif roundNumber < 10 then
+    elseif roundNumber < 7 then
       numCardsInPlay = math.random(1, 2)
     else
       numCardsInPlay = math.random(1, 3)
     end
   elseif valueInPlay <= 15 then
     -- 11 to 15 points in play
-    if roundNumber < 10 then
+    if roundNumber < 5 then
       numCardsInPlay = 2
-    elseif roundNumber < 15 then
+    elseif roundNumber < 10 then
       numCardsInPlay = math.random(2, 3)
     else
       numCardsInPlay = math.random(2, 4)
     end
   else
     -- 16 to 20 ponts in play
-    if roundNumber < 15 then
+    if roundNumber < 10 then
       numCardsInPlay = math.random(2, 3)
     else
       numCardsInPlay = math.random(2, 4)
@@ -186,6 +186,7 @@ local function generateRound(roundNumber)
     end
     attemptsLeft = attemptsLeft - 1
   end
+  -- TODO shuffle cards
   -- Set start points and apexes for each card
   local index, cardProps
   for index, cardProps in ipairs(cardsInPlay) do

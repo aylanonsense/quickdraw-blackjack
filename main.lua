@@ -25,6 +25,12 @@ function love.draw()
   -- Draw the game
   love.graphics.setColor(1, 1, 1, 1)
   game.draw()
+  -- Draw blinders
+  love.graphics.setColor(0, 0, 0, 1)
+  love.graphics.rectangle('fill', constants.GAME_RIGHT, constants.GAME_TOP - 1000, 1000, constants.GAME_HEIGHT + 2000)
+  love.graphics.rectangle('fill', constants.GAME_LEFT - 1000, constants.GAME_TOP - 1000, 1000, constants.GAME_HEIGHT + 2000)
+  love.graphics.rectangle('fill', constants.GAME_LEFT - 1000, constants.GAME_TOP - 1000, constants.GAME_WIDTH + 2000, 1000)
+  love.graphics.rectangle('fill', constants.GAME_LEFT - 1000, constants.GAME_BOTTOM, constants.GAME_WIDTH + 2000, 1000)
 end
 
 function love.mousepressed(x, y, button)
