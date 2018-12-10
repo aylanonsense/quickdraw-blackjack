@@ -1,0 +1,36 @@
+TODO
+
+tuning:
+  apex selection
+  difficulty curve
+  round animation timing
+  launch timing + trajectory easing
+
+features:
+  personal best
+  button between rounds
+  tutorial/instructions
+  credits
+  sounds
+  render layers
+
+visuals:
+  background
+  title screen
+  holes in cards
+  card particles
+  shoot play button
+  missed shot animation
+  background light-up on shot
+  beginning title screen transition
+  transition from title screen to first round
+  transition to title screen from game over
+
+extras:
+  lives
+  widgets to shoot (bottles?)
+  score
+  checkpoints
+  tips
+  shoot to speed up animations
+  delight
