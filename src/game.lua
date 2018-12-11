@@ -7,6 +7,7 @@ local PlayButton = require 'src/entity/PlayButton'
 local Title = require 'src/entity/Title'
 local Hand = require 'src/entity/Hand'
 local Card = require 'src/entity/Card'
+local Sounds = require 'src/Sounds'
 local RoundResults = require 'src/entity/RoundResults'
 local ScoreCalculation = require 'src/entity/ScoreCalculation'
 local RoundIndicator = require 'src/entity/RoundIndicator'
@@ -55,6 +56,10 @@ initTitleScreen = function()
       transitionToGameplay()
     end
   })
+  --Sounds.music:stop()
+  Sounds.titleLoop:play()
+  Sounds.gameMusicVerb:play()
+  Sounds.gameMusicVerb:setVolume(0.0)
   -- Debug
   if constants.TURBO_MODE then
     transitionToGameplay()
@@ -106,12 +111,17 @@ initRoundStart = function()
       hand = hand
     }))
   end
+  -- Loop the music
+  Sounds.titleLoop:stop()
+  --Sounds.music:play()
+  Sounds.gameMusicVerb:setVolume(0.2)
   -- Deal hand cards and then launch remaining cards
   Promise.newActive(function()
       return hand:dealCards()
     end)
     :andThen(0.7)
     :andThen(function()
+      Sounds.unholster:play()
       return hand:moveToBottom()
     end)
     :andThen(function()
@@ -123,6 +133,7 @@ initRoundStart = function()
           function()
             card.canBeShot = true
             card:launch(cardProps.apexX - card.x, cardProps.apexY - card.y, launchMult * cardProps.launchDuration)
+            Sounds.launch:play()
           end)
       end
       return launchMult * round.launchDuration
@@ -150,10 +161,13 @@ initRoundStart = function()
       local result
       if value == 21 then
         result = 'blackjack'
+        Sounds.blackjack:play()
       elseif value < 21 then
         result = 'miss'
+        Sounds.miss:play()
       elseif value > 21 then
         result = 'bust'
+        Sounds.bust:play()
       end
       RoundResults:spawn({
         result = result
@@ -212,14 +226,65 @@ initRoundEnd = function()
     end)
 end
 
+local function initSounds()
+  Sounds.gunshot = Sound:new("snd/gunshot.wav", 8)
+  Sounds.pew1 = Sound:new("snd/pew1.wav", 8)
+  Sounds.pew2 = Sound:new("snd/pew2.wav", 8)
+  Sounds.pew3 = Sound:new("snd/pew3.wav", 8)
+  Sounds.pew4 = Sound:new("snd/pew4.wav", 8)
+  Sounds.pew5 = Sound:new("snd/pew5.wav", 8)
+  Sounds.pew6 = Sound:new("snd/pew6.wav", 8)
+  Sounds.pew7 = Sound:new("snd/pew7.wav", 8)
+  Sounds.pew8 = Sound:new("snd/pew8.wav", 8)
+  Sounds.pew9 = Sound:new("snd/pew9.wav", 8)
+  Sounds.pew10 = Sound:new("snd/pew10.wav", 8)
+  Sounds.pew11 = Sound:new("snd/pew11.wav", 8)
+  Sounds.pew12 = Sound:new("snd/pew12.wav", 8)
+  Sounds.impact = Sound:new("snd/impact.wav", 5)
+  Sounds.unholster = Sound:new("snd/gun_unholster.mp3", 1)
+  Sounds.launch = Sound:new("snd/launch.mp3", 15)
+  Sounds.miss = Sound:new("snd/miss.wav", 1)
+  Sounds.bust = Sound:new("snd/bust.wav", 1)
+  Sounds.blackjack = Sound:new("snd/impact.wav", 1) -- TODO: design a sound
+  Sounds.titleLoop = Sound:new("snd/title_loop.mp3", 1)
+  Sounds.titleLoop:setLooping(true)
+  --Sounds.music = Sound:new("snd/music.wav", 1)
+  --Sounds.music:setLooping(true)
+  Sounds.gameMusicVerb = Sound:new("snd/game_music_loop_verb.mp3", 1)
+  Sounds.gameMusicVerb:setLooping(true)
+end
+
 -- Main methods
 local function load()
   scene = nil
   isTransitioningScenes = false
+  -- Init sounds
+  initSounds()
   -- Initialize game vars
   entities = {}
   -- Start at the title screen
   initTitleScreen()
+end
+
+local function playGunshotSound()
+  -- Gunshot
+  Sounds.gunshot:play()
+
+  -- A random pew.
+  local pew = math.random(1, 12)
+  if     pew == 1 then  Sounds.pew1:play()
+  elseif pew == 2 then  Sounds.pew2:play()
+  elseif pew == 3 then  Sounds.pew3:play()
+  elseif pew == 4 then  Sounds.pew4:play()
+  elseif pew == 5 then  Sounds.pew5:play()
+  elseif pew == 6 then  Sounds.pew6:play()
+  elseif pew == 7 then  Sounds.pew7:play()
+  elseif pew == 8 then  Sounds.pew8:play()
+  elseif pew == 9 then  Sounds.pew9:play()
+  elseif pew == 10 then Sounds.pew10:play()
+  elseif pew == 11 then Sounds.pew11:play()
+  elseif pew == 12 then Sounds.pew12:play()
+  end
 end
 
 local function update(dt)
@@ -248,6 +313,7 @@ local function draw()
 end
 
 local function onMousePressed(x, y)
+  playGunshotSound()
   local index, entity
   for index, entity in ipairs(entities) do
     if entity.isAlive then

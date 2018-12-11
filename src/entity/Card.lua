@@ -4,6 +4,7 @@ local Promise = require 'src/util/Promise'
 local Entity = require 'src/entity/Entity'
 local CardExplosion = require 'src/entity/CardExplosion'
 local Gunshot = require 'src/entity/Gunshot'
+local Sounds = require 'src/Sounds'
 
 local COLOR = { 1, 1, 1, 1 }
 local FONT = love.graphics.newFont(28)
@@ -147,6 +148,7 @@ local Card = Entity.extend({
         y = y
       })
       self.hand:addShotCard(self)
+      Sounds.impact:play()
     end
   end,
   getValue = function(self)
