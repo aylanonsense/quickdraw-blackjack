@@ -42,6 +42,32 @@ local function removeDeadEntities(list)
   end)
 end
 
+local function playGunshotSound(isClickInsideGame)
+  if isClickInsideGame then
+    -- Gunshot
+    Sounds.gunshot:play()
+
+    -- A random pew.
+    local pew = math.random(1, 12)
+    if     pew == 1 then  Sounds.pew1:play()
+    elseif pew == 2 then  Sounds.pew2:play()
+    elseif pew == 3 then  Sounds.pew3:play()
+    elseif pew == 4 then  Sounds.pew4:play()
+    elseif pew == 5 then  Sounds.pew5:play()
+    elseif pew == 6 then  Sounds.pew6:play()
+    elseif pew == 7 then  Sounds.pew7:play()
+    elseif pew == 8 then  Sounds.pew8:play()
+    elseif pew == 9 then  Sounds.pew9:play()
+    elseif pew == 10 then Sounds.pew10:play()
+    elseif pew == 11 then Sounds.pew11:play()
+    elseif pew == 12 then Sounds.pew12:play()
+    end
+  else
+    -- Empty gun trigger click
+    Sounds.gunclick:play()
+  end
+end
+
 -- Scene methods
 initTitleScreen = function()
   scene = 'title'
@@ -166,12 +192,13 @@ initRoundStart = function()
       if value == 21 then
         result = 'blackjack'
         Sounds.blackjack:play()
+        playGunshotSound(true)
       elseif value < 21 then
         result = 'miss'
-        Sounds.miss:play()
+        Sounds.lose:play()
       elseif value > 21 then
         result = 'bust'
-        Sounds.bust:play()
+        Sounds.lose:play()
       end
       RoundResults:spawn({
         result = result
@@ -248,8 +275,7 @@ local function initSounds()
   Sounds.impact = Sound:new("snd/impact.wav", 5)
   Sounds.unholster = Sound:new("snd/gun_unholster.mp3", 1)
   Sounds.launch = Sound:new("snd/launch.mp3", 15)
-  Sounds.miss = Sound:new("snd/miss.wav", 1)
-  Sounds.bust = Sound:new("snd/bust.wav", 1)
+  Sounds.lose = Sound:new("snd/bust.wav", 1)
   Sounds.blackjack = Sound:new("snd/impact.wav", 1) -- TODO: design a sound
   Sounds.titleLoop = Sound:new("snd/title_loop.mp3", 1)
   Sounds.titleLoop:setLooping(true)
@@ -265,32 +291,6 @@ local function load()
   entities = {}
   -- Start at the title screen
   initTitleScreen()
-end
-
-local function playGunshotSound(isClickInsideGame)
-  if isClickInsideGame then
-    -- Gunshot
-    Sounds.gunshot:play()
-
-    -- A random pew.
-    local pew = math.random(1, 12)
-    if     pew == 1 then  Sounds.pew1:play()
-    elseif pew == 2 then  Sounds.pew2:play()
-    elseif pew == 3 then  Sounds.pew3:play()
-    elseif pew == 4 then  Sounds.pew4:play()
-    elseif pew == 5 then  Sounds.pew5:play()
-    elseif pew == 6 then  Sounds.pew6:play()
-    elseif pew == 7 then  Sounds.pew7:play()
-    elseif pew == 8 then  Sounds.pew8:play()
-    elseif pew == 9 then  Sounds.pew9:play()
-    elseif pew == 10 then Sounds.pew10:play()
-    elseif pew == 11 then Sounds.pew11:play()
-    elseif pew == 12 then Sounds.pew12:play()
-    end
-  else
-    -- Empty gun trigger click
-    Sounds.gunclick:play()
-  end
 end
 
 local function update(dt)
