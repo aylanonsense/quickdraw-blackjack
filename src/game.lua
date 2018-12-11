@@ -332,7 +332,7 @@ local function onMousePressed(x, y)
     if entity.isAlive then
       entity:onMousePressed(x, y)
     end
-  endm
+  end
 end
 
 return {
