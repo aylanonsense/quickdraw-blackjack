@@ -1,6 +1,9 @@
 local constants = require 'src/constants'
 local game = require 'src/game'
 
+local translateScreenToCenterDx = 0
+local translateScreenToCenterDy = 0
+
 function love.load()
   game.load()
 end
@@ -10,6 +13,12 @@ function love.update(dt)
 end
 
 function love.draw()
+  -- Center everything within Castle window
+  love.graphics.push() -- center screen
+  translateScreenToCenterDx = 0.5 * (love.graphics.getWidth() - constants.SCREEN_WIDTH)
+  translateScreenToCenterDy = 0.5 * (love.graphics.getHeight() - constants.SCREEN_HEIGHT)
+  love.graphics.translate(translateScreenToCenterDx, translateScreenToCenterDy)
+  -- Set Filter
   love.graphics.setDefaultFilter('nearest', 'nearest')
   -- Draw screen bounds
   -- love.graphics.setColor(0, 1, 0, 1)
@@ -31,10 +40,12 @@ function love.draw()
   love.graphics.rectangle('fill', constants.GAME_LEFT - 1000, constants.GAME_TOP - 1000, 1000, constants.GAME_HEIGHT + 2000)
   love.graphics.rectangle('fill', constants.GAME_LEFT - 1000, constants.GAME_TOP - 1000, constants.GAME_WIDTH + 2000, 1000)
   love.graphics.rectangle('fill', constants.GAME_LEFT - 1000, constants.GAME_BOTTOM, constants.GAME_WIDTH + 2000, 1000)
+  -- Pop centering within Castle window
+  love.graphics.pop()
 end
 
 function love.mousepressed(x, y, button)
   if button == 1 then
-    game.onMousePressed((x - constants.RENDER_X) / constants.RENDER_SCALE, (y - constants.RENDER_Y) / constants.RENDER_SCALE)
+    game.onMousePressed(((x - translateScreenToCenterDx) - constants.RENDER_X) / constants.RENDER_SCALE, ((y - translateScreenToCenterDy) - constants.RENDER_Y) / constants.RENDER_SCALE)
   end
 end
