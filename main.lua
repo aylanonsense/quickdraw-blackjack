@@ -1,6 +1,8 @@
 local constants = require 'src/constants'
 local game = require 'src/game'
 
+local soundMuted = false
+
 function love.load()
   game.load()
 end
@@ -36,5 +38,17 @@ end
 function love.mousepressed(x, y, button)
   if button == 1 then
     game.onMousePressed((x - constants.RENDER_X) / constants.RENDER_SCALE, (y - constants.RENDER_Y) / constants.RENDER_SCALE)
+  end
+end
+
+function love.keypressed(key, scancode, isrepeat)
+  if key == 'm' or key == 'M' then
+    local vol = love.audio.getVolume()
+    if vol < 0.01 then
+      vol = 1.0
+    else
+      vol = 0.0
+    end
+    love.audio.setVolume(vol)
   end
 end
