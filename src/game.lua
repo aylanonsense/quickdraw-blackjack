@@ -59,9 +59,6 @@ initTitleScreen = function()
     end
   })
   Sounds.titleLoop:play()
-  Sounds.gameMusicVerb:play()
-  Sounds.gameMusicVerb:setVolume(0.0)
-  Sounds.titleLoop:setVolume(1.0)
   -- Debug
   if constants.TURBO_MODE then
     transitionToGameplay()
@@ -115,8 +112,8 @@ initRoundStart = function()
     }))
   end
   -- Loop the music
-  Sounds.titleLoop:setVolume(0.0)
-  Sounds.gameMusicVerb:setVolume(0.2)
+  -- TODO: loop any music while playing
+  Sounds.titleLoop:stop()
   -- Deal hand cards and then launch remaining cards
   Promise.newActive(function()
       return hand:dealCards()
@@ -256,8 +253,6 @@ local function initSounds()
   Sounds.blackjack = Sound:new("snd/impact.wav", 1) -- TODO: design a sound
   Sounds.titleLoop = Sound:new("snd/title_loop.mp3", 1)
   Sounds.titleLoop:setLooping(true)
-  Sounds.gameMusicVerb = Sound:new("snd/game_music_loop_verb.mp3", 1)
-  Sounds.gameMusicVerb:setLooping(true)
 end
 
 -- Main methods
