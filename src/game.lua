@@ -27,6 +27,7 @@ local hand
 local playButton
 local roundResults
 local roundNumber
+local isGunLoaded = false
 
 -- Entity methods
 Entity.spawn = function(class, args)
@@ -45,6 +46,7 @@ end
 initTitleScreen = function()
   scene = 'title'
   roundNumber = 1
+  isGunLoaded = true
   Title:spawn({
     x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.35
@@ -56,10 +58,10 @@ initTitleScreen = function()
       transitionToGameplay()
     end
   })
-  --Sounds.music:stop()
   Sounds.titleLoop:play()
   Sounds.gameMusicVerb:play()
   Sounds.gameMusicVerb:setVolume(0.0)
+  Sounds.titleLoop:setVolume(1.0)
   -- Debug
   if constants.TURBO_MODE then
     transitionToGameplay()
@@ -78,6 +80,7 @@ transitionToGameplay = function()
 end
 
 initRoundStart = function()
+  isGunLoaded = false
   scene = 'round-start'
   RoundIndicator:spawn({
     roundNumber = roundNumber
@@ -112,8 +115,7 @@ initRoundStart = function()
     }))
   end
   -- Loop the music
-  Sounds.titleLoop:stop()
-  --Sounds.music:play()
+  Sounds.titleLoop:setVolume(0.0)
   Sounds.gameMusicVerb:setVolume(0.2)
   -- Deal hand cards and then launch remaining cards
   Promise.newActive(function()
@@ -121,10 +123,14 @@ initRoundStart = function()
     end)
     :andThen(0.7)
     :andThen(function()
-      Sounds.unholster:play()
       return hand:moveToBottom()
     end)
     :andThen(function()
+      Sounds.unholster:play()
+      return 0.5
+    end)
+    :andThen(function()
+      isGunLoaded = true
       local launchMult = constants.TURBO_MODE and 0.4 or 1.0
       local index, card
       for index, cardProps in ipairs(round.cards) do
@@ -139,6 +145,7 @@ initRoundStart = function()
       return launchMult * round.launchDuration
     end)
     :andThen(function()
+      isGunLoaded = false
       return hand:moveToCenter()
     end)
     :andThen(function()
@@ -228,6 +235,7 @@ end
 
 local function initSounds()
   Sounds.gunshot = Sound:new("snd/gunshot.wav", 8)
+  Sounds.gunclick = Sound:new("snd/gun_trigger_empty.wav", 5)
   Sounds.pew1 = Sound:new("snd/pew1.wav", 8)
   Sounds.pew2 = Sound:new("snd/pew2.wav", 8)
   Sounds.pew3 = Sound:new("snd/pew3.wav", 8)
@@ -248,8 +256,6 @@ local function initSounds()
   Sounds.blackjack = Sound:new("snd/impact.wav", 1) -- TODO: design a sound
   Sounds.titleLoop = Sound:new("snd/title_loop.mp3", 1)
   Sounds.titleLoop:setLooping(true)
-  --Sounds.music = Sound:new("snd/music.wav", 1)
-  --Sounds.music:setLooping(true)
   Sounds.gameMusicVerb = Sound:new("snd/game_music_loop_verb.mp3", 1)
   Sounds.gameMusicVerb:setLooping(true)
 end
@@ -266,24 +272,29 @@ local function load()
   initTitleScreen()
 end
 
-local function playGunshotSound()
-  -- Gunshot
-  Sounds.gunshot:play()
+local function playGunshotSound(isClickInsideGame)
+  if isClickInsideGame then
+    -- Gunshot
+    Sounds.gunshot:play()
 
-  -- A random pew.
-  local pew = math.random(1, 12)
-  if     pew == 1 then  Sounds.pew1:play()
-  elseif pew == 2 then  Sounds.pew2:play()
-  elseif pew == 3 then  Sounds.pew3:play()
-  elseif pew == 4 then  Sounds.pew4:play()
-  elseif pew == 5 then  Sounds.pew5:play()
-  elseif pew == 6 then  Sounds.pew6:play()
-  elseif pew == 7 then  Sounds.pew7:play()
-  elseif pew == 8 then  Sounds.pew8:play()
-  elseif pew == 9 then  Sounds.pew9:play()
-  elseif pew == 10 then Sounds.pew10:play()
-  elseif pew == 11 then Sounds.pew11:play()
-  elseif pew == 12 then Sounds.pew12:play()
+    -- A random pew.
+    local pew = math.random(1, 12)
+    if     pew == 1 then  Sounds.pew1:play()
+    elseif pew == 2 then  Sounds.pew2:play()
+    elseif pew == 3 then  Sounds.pew3:play()
+    elseif pew == 4 then  Sounds.pew4:play()
+    elseif pew == 5 then  Sounds.pew5:play()
+    elseif pew == 6 then  Sounds.pew6:play()
+    elseif pew == 7 then  Sounds.pew7:play()
+    elseif pew == 8 then  Sounds.pew8:play()
+    elseif pew == 9 then  Sounds.pew9:play()
+    elseif pew == 10 then Sounds.pew10:play()
+    elseif pew == 11 then Sounds.pew11:play()
+    elseif pew == 12 then Sounds.pew12:play()
+    end
+  else
+    -- Empty gun trigger click
+    Sounds.gunclick:play()
   end
 end
 
@@ -313,13 +324,15 @@ local function draw()
 end
 
 local function onMousePressed(x, y)
-  playGunshotSound()
+  local isClickInsideGame = (x < constants.GAME_RIGHT and x > constants.GAME_LEFT and 
+                             y > constants.GAME_TOP and y < constants.GAME_BOTTOM)
+  playGunshotSound(isClickInsideGame and isGunLoaded)
   local index, entity
   for index, entity in ipairs(entities) do
     if entity.isAlive then
       entity:onMousePressed(x, y)
     end
-  end
+  endm
 end
 
 return {
