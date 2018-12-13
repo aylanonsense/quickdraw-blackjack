@@ -1,6 +1,7 @@
 local constants = require 'src/constants'
 local Entity = require 'src/entity/Entity'
 local Promise = require 'src/util/Promise'
+local Sounds = require 'src/Sounds'
 
 local COLOR = { 1, 1, 1, 1 }
 local FONT = love.graphics.newFont(28)
@@ -21,6 +22,7 @@ local Hand = Entity.extend({
       Promise.newActive(0.1 * index)
         :andThen(function()
           card:throw(constants.GAME_MIDDLE_X + (constants.CARD_WIDTH + 2) * i, 0.6 * constants.GAME_HEIGHT)
+          Sounds.dealCard:play()
         end)
     end
     return constants.TURBO_MODE and 0.1 or 1.5
@@ -72,6 +74,7 @@ local Hand = Entity.extend({
         local i = (col - numCols / 2 - 0.5)
         Promise.newActive(0.2 * index)
           :andThen(function()
+            Sounds.dealCard:play()
             card:throw(constants.GAME_MIDDLE_X + (constants.CARD_WIDTH + 2) * i, constants.GAME_MIDDLE_Y + row * (constants.CARD_HEIGHT + 2))
           end)
       end
