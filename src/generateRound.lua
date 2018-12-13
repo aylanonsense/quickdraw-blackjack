@@ -186,16 +186,27 @@ local function generateRound(roundNumber)
     end
     attemptsLeft = attemptsLeft - 1
   end
-  -- TODO shuffle cards
   -- Set start points and apexes for each card
   local index, cardProps
+  local apexAreaWidth = constants.CARD_APEX_RIGHT - constants.CARD_APEX_LEFT
+  local apexOffsetX = math.random(0, apexAreaWidth)
   for index, cardProps in ipairs(cardsInPlay) do
-    cardProps.x = 20 * index
+    apexOffsetX = apexOffsetX + apexAreaWidth * (0.35 + 0.3 * math.random())
+    apexOffsetX = apexOffsetX % apexAreaWidth
+    cardProps.apexX = constants.CARD_APEX_LEFT + apexOffsetX -- math.random(constants.CARD_APEX_LEFT, constants.CARD_APEX_RIGHT)
+    cardProps.apexY = constants.CARD_APEX_TOP + index / (#cardsInPlay + 1) * (constants.CARD_APEX_BOTTOM - constants.CARD_APEX_TOP) --  math.random(constants.CARD_APEX_TOP, constants.CARD_APEX_BOTTOM)
+    cardProps.x = math.random(math.max(cardProps.apexX - apexAreaWidth / 2, constants.GAME_LEFT), math.min(cardProps.apexX + apexAreaWidth / 2, constants.GAME_RIGHT))
     cardProps.y = constants.GAME_BOTTOM + 0.7 * constants.CARD_HEIGHT
-    cardProps.apexX = math.random(constants.CARD_APEX_LEFT, constants.CARD_APEX_RIGHT)
-    cardProps.apexY = math.random(constants.CARD_APEX_TOP, constants.CARD_APEX_BOTTOM)
-    cardProps.launchDelay = 0.3 * (index - 1)
-    cardProps.launchDuration = launchDuration - cardProps.launchDelay
+  end
+  -- Shuffle the cards
+  local launchDelayPerCard = math.max(0.35 - 0.023 * #cardsInPlay, 0.05)
+  for index = 1, #cardsInPlay do
+    local swapIndex = math.random(index, #cardsInPlay)
+    local temp = cardsInPlay[index]
+    cardsInPlay[index] = cardsInPlay[swapIndex]
+    cardsInPlay[swapIndex] = temp
+    cardsInPlay[index].launchDelay = launchDelayPerCard * (index - 1)
+    cardsInPlay[index].launchDuration = launchDuration + 0.0 * cardsInPlay[index].launchDelay
   end
   -- Return the round properties
   return {

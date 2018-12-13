@@ -63,9 +63,15 @@ local Card = Entity.extend({
     if not self:animationsInclude('rotation') then
       self.rotation = self.rotation + self.vr * dt
     end
+    -- Dilate time near the apex of a launch
+    local timeMult = 1.0
+    if self.canBeShot and self.gravity ~= 0.0 then
+      timeMult = 0.9 + 1.3 * math.min(0.2 * math.abs(self.vy) / self.gravity, 1.0)
+    end
+    local dt2 = dt * timeMult
     -- Accelerate downwards
-    self.vy = self.vy + self.gravity * dt
-    Entity.update(self, dt)
+    self.vy = self.vy + self.gravity * dt2
+    Entity.update(self, dt2)
     -- Fall offscreen
     if self.y > constants.GAME_HEIGHT + constants.CARD_HEIGHT then
       self:die()
@@ -97,7 +103,7 @@ local Card = Entity.extend({
     end
   end,
   -- Launch the card in an arc such that it travels dx pixels horizontally
-  --  and reaches a height of y + dy within the specified number of frames
+  --  and reaches a height of y + dy within the specified time
   launch = function(self, dx, dy, t)
     -- At time = t/2, the card is at peak height (v = 4 * h / t)
     self.vy = 4 * dy / t

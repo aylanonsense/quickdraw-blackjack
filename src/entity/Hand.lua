@@ -79,7 +79,7 @@ local Hand = Entity.extend({
           end)
       end
     end
-    return constants.TURBO_MODE and 0.1 or 1.5
+    return constants.TURBO_MODE and 0.1 or 1.2
   end,
   explode = function(self, force)
     local index, card

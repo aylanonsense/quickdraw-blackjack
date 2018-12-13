@@ -143,9 +143,8 @@ initRoundStart = function()
   -- Deal hand cards and then launch remaining cards
   Promise.newActive(function()
       Sounds.roundStart:play()
-      return hand:dealCards()
+      return hand:dealCards() + 0.6
     end)
-    :andThen(0.7)
     :andThen(function()
       Sounds.handSlide:play()
       return hand:moveToBottom()
@@ -163,7 +162,7 @@ initRoundStart = function()
         Promise.newActive(launchMult * cardProps.launchDelay):andThen(
           function()
             card.canBeShot = true
-            card:launch(cardProps.apexX - card.x, cardProps.apexY - card.y, launchMult * cardProps.launchDuration)
+            card:launch(2 * (cardProps.apexX - card.x), cardProps.apexY - card.y, launchMult * cardProps.launchDuration)
             -- higher launch == higher pitched sound
             local pitch = 0.7 + 0.6 * (1.0 - (cardProps.apexY / constants.GAME_HEIGHT))
             Sounds.launch:playWithPitch(pitch)
@@ -174,7 +173,7 @@ initRoundStart = function()
     :andThen(function()
       isGunLoaded = false
       Sounds.handSlide:play()
-      return hand:moveToCenter()
+      return hand:moveToCenter() - 1.0
     end)
     :andThen(function()
       return hand:showShotCards()
