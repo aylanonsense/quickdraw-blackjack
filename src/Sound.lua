@@ -1,3 +1,5 @@
+local constants = require 'src/constants'
+
 Sound = {}
 
 function Sound:new(filename, cacheSize)
@@ -17,8 +19,10 @@ function Sound:new(filename, cacheSize)
 end
 
 function Sound:play()
-  self.sources[self.index]:play();
-  self.index = (self.index % self.cacheSize) + 1;
+  if not constants.MUTE_ALL_SOUNDS then
+    self.sources[self.index]:play();
+    self.index = (self.index % self.cacheSize) + 1;
+  end
 end
 
 function Sound:stop()

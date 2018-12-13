@@ -3,7 +3,6 @@ local game = require 'src/game'
 
 local translateScreenToCenterDx = 0
 local translateScreenToCenterDy = 0
-local soundMuted = false
 
 function love.load()
   game.load()
