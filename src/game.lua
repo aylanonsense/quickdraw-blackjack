@@ -142,10 +142,12 @@ initRoundStart = function()
   Sounds.titleLoop:stop()
   -- Deal hand cards and then launch remaining cards
   Promise.newActive(function()
+      Sounds.roundStart:play()
       return hand:dealCards()
     end)
     :andThen(0.7)
     :andThen(function()
+      Sounds.handSlide:play()
       return hand:moveToBottom()
     end)
     :andThen(function()
@@ -162,13 +164,16 @@ initRoundStart = function()
           function()
             card.canBeShot = true
             card:launch(cardProps.apexX - card.x, cardProps.apexY - card.y, launchMult * cardProps.launchDuration)
-            Sounds.launch:play()
+            -- higher launch == higher pitched sound
+            local pitch = 0.7 + 0.6 * (1.0 - (cardProps.apexY / constants.GAME_HEIGHT))
+            Sounds.launch:playWithPitch(pitch)
           end)
       end
       return launchMult * round.launchDuration
     end)
     :andThen(function()
       isGunLoaded = false
+      Sounds.handSlide:play()
       return hand:moveToCenter()
     end)
     :andThen(function()
@@ -180,6 +185,7 @@ initRoundStart = function()
         x = constants.GAME_MIDDLE_X,
         y = constants.GAME_MIDDLE_Y - constants.CARD_HEIGHT / 2 - 17
       })
+      Sounds.scoreCounter:play()
       return Promise.newActive(1.0)
         :andThen(function()
           scoreCalculation:showScore()
@@ -195,10 +201,10 @@ initRoundStart = function()
         playGunshotSound(true)
       elseif value < 21 then
         result = 'miss'
-        Sounds.lose:play()
+        Sounds.gameOver:play() -- TODO: card explosion/ruffling
       elseif value > 21 then
         result = 'bust'
-        Sounds.lose:play()
+        Sounds.gameOver:play() -- TODO: card explosion/ruffling
       end
       RoundResults:spawn({
         result = result
@@ -213,7 +219,10 @@ initRoundStart = function()
         roundNumber = roundNumber + 1
         initRoundStart()
       else
-        initTitleScreen()
+        return Promise.newActive(8.0)
+        :andThen(function()
+          initTitleScreen()
+        end)
       end
     end)
 end
@@ -258,7 +267,7 @@ initRoundEnd = function()
 end
 
 local function initSounds()
-  Sounds.gunshot = Sound:new("snd/gunshot.wav", 8)
+  Sounds.gunshot = Sound:new("snd/gunshot.mp3", 8)
   Sounds.gunclick = Sound:new("snd/gun_trigger_empty.wav", 5)
   Sounds.pew1 = Sound:new("snd/pew1.wav", 8)
   Sounds.pew2 = Sound:new("snd/pew2.wav", 8)
@@ -272,13 +281,18 @@ local function initSounds()
   Sounds.pew10 = Sound:new("snd/pew10.wav", 8)
   Sounds.pew11 = Sound:new("snd/pew11.wav", 8)
   Sounds.pew12 = Sound:new("snd/pew12.wav", 8)
-  Sounds.impact = Sound:new("snd/impact.wav", 5)
+  Sounds.impact = Sound:new("snd/impact.mp3", 5)
   Sounds.unholster = Sound:new("snd/gun_unholster.mp3", 1)
   Sounds.launch = Sound:new("snd/launch.mp3", 15)
-  Sounds.lose = Sound:new("snd/bust.wav", 1)
-  Sounds.blackjack = Sound:new("snd/impact.wav", 1) -- TODO: design a sound
+  Sounds.blackjack = Sound:new("snd/impact.mp3", 1) -- TODO: design a sound
   Sounds.titleLoop = Sound:new("snd/title_loop.mp3", 1)
   Sounds.titleLoop:setLooping(true)
+  Sounds.roundStart = Sound:new("snd/honky-tonk-round-start.wav")
+  Sounds.dealCard = Sound:new("snd/deal_card.mp3", 5)
+  Sounds.scoreCounter = Sound:new("snd/score_counter.mp3", 1)
+  Sounds.handSlide = Sound:new("snd/card_slide.mp3", 1)
+  Sounds.handSlide:setVolume(0.2)
+  Sounds.gameOver = Sound:new("snd/game_over.mp3")
 end
 
 -- Main methods

@@ -33,6 +33,11 @@ function Sound:setVolume(vlm)
   end
 end
 
+function Sound:playWithPitch(pitch)
+  self.sources[self.index]:setPitch(pitch)
+  self:play()
+end
+
 function Sound:setLooping(shouldLoop)
   for i = 1, self.cacheSize do
     self.sources[i]:setLooping(shouldLoop);
