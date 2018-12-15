@@ -10,7 +10,8 @@ local COLOR = { 1, 1, 1, 1 }
 local FONT = love.graphics.newFont(28)
 
 local SPRITESHEET = SpriteSheet.new('img/cards.png', {
-  CARD_FRONT = { 1, 1, 23, 33 },
+  FRONT = { 1, 1, 23, 33 },
+  SHADOW = { 105, 1, 23, 33 },
   SUIT = {
     function(suitIndex)
       return { 6 * suitIndex + 19, 27, 5, 5 }
@@ -40,7 +41,13 @@ local SPRITESHEET = SpriteSheet.new('img/cards.png', {
       return { 20 * suitIndex + 5, 1, 19, 25 }
     end,
     { 4 }
-  }
+  },
+  BULLET_HOLE = {
+    function(bulletHoleIndex)
+      return { 23 + 17 * bulletHoleIndex, 83, 16, 16 }
+    end,
+    { 2 }
+  },
 })
 
 local Card = Entity.extend({
@@ -53,6 +60,9 @@ local Card = Entity.extend({
   rankIndex = 13,
   suitIndex = 2,
   canBeShot = false,
+  bulletHole = nil,
+  bulletX = 0, -- -5 to 5
+  bulletY = 0, -- -8 to 10
   constructor = function(self)
     Entity.constructor(self)
     self.colorIndex = self.suitIndex < 3 and 1 or 2
@@ -85,7 +95,7 @@ local Card = Entity.extend({
     local radians = self.rotation * math.pi / 180
     local c = math.cos(radians)
     local s = math.sin(radians)
-    SPRITESHEET:drawCentered('CARD_FRONT', self.x, self.y, self.rotation)
+    SPRITESHEET:drawCentered('FRONT', self.x, self.y, self.rotation)
     if self.rankIndex == 13 then
       SPRITESHEET:drawCentered({ 'ACES', self.suitIndex }, self.x, self.y, self.rotation)
     else
@@ -101,6 +111,19 @@ local Card = Entity.extend({
         SPRITESHEET:draw({ 'FACES', self.rankIndex - 9, self.suitIndex }, self.x, self.y, self.rotation + 180, constants.CARD_WIDTH / 2 - 14, -constants.CARD_HEIGHT / 2)
       end
     end
+    if self.bulletHole then
+      SPRITESHEET:drawCentered({ 'BULLET_HOLE', self.bulletHole }, self.x, self.y, self.rotation, self.bulletX, self.bulletY)
+    end
+  end,
+  drawShadow = function(self)
+    local x = self.x
+    local y = self.y
+    local w = self.width / 2
+    local h = self.height / 2
+    local radians = self.rotation * math.pi / 180
+    local c = math.cos(radians)
+    local s = math.sin(radians)
+    SPRITESHEET:drawCentered('SHADOW', self.x - 1, self.y + 2, self.rotation)
   end,
   -- Launch the card in an arc such that it travels dx pixels horizontally
   --  and reaches a height of y + dy within the specified time
@@ -144,6 +167,14 @@ local Card = Entity.extend({
   onMousePressed = function(self, x, y)
     if self.canBeShot and self:containsPoint(x, y) then
       self.canBeShot = false
+      local radians = self.rotation * math.pi / 180
+      local c = math.cos(radians)
+      local s = math.sin(radians)
+      local dx = x - self.x
+      local dy = y - self.y
+      self.bulletHole = math.random(1, 2)
+      self.bulletX = math.max(-5, math.min(dx * c + dy * s, 5))
+      self.bulletY = math.max(-8, math.min(dy * c - dx * s, 10))
       CardExplosion:spawn({
         x = self.x,
         y = self.y,

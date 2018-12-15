@@ -10,8 +10,9 @@ local SPRITESHEET = SpriteSheet.new('img/effects.png', {
   },
 })
 
-local CardExplosion = Entity.extend({
+local Gunshot = Entity.extend({
   timeToDeath = 0.1,
+  renderLayer = 8,
   constructor = function(self)
     Entity.constructor(self)
     self.rotation = math.random(0, 360)
@@ -22,4 +23,4 @@ local CardExplosion = Entity.extend({
   end
 })
 
-return CardExplosion
+return Gunshot

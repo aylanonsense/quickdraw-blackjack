@@ -15,6 +15,7 @@ local SPRITESHEET = SpriteSheet.new('img/ui.png', {
 local RoundIndicator = Entity.extend({
   x = constants.GAME_MIDDLE_X,
   y = constants.GAME_TOP + 2,
+  renderLayer = 3,
   draw = function(self)
     SPRITESHEET:draw('ROUND', self.x - 23, self.y)
     local roundText = ''..self.roundNumber

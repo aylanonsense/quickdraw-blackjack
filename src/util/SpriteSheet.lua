@@ -57,12 +57,12 @@ local SpriteSheet = createClass({
       return quad
     end
   end,
-  draw = function(self, quadName, x, y, r, offsetX, offsetY)
-    love.graphics.draw(self.image, self:getQuad(quadName), x, y, (r or 0) * math.pi / 180, 1, 1, -(offsetX or 0), -(offsetY or 0))
+  draw = function(self, quadName, x, y, r, offsetX, offsetY, scaleX, scaleY)
+    love.graphics.draw(self.image, self:getQuad(quadName), x, y, (r or 0) * math.pi / 180, scaleX or 1, scaleY or 1, -(offsetX or 0), -(offsetY or 0))
   end,
-  drawCentered = function(self, quadName, x, y, r, offsetX, offsetY)
+  drawCentered = function(self, quadName, x, y, r, offsetX, offsetY, scaleX, scaleY)
     local quadX, quadY, quadWidth, quadHeight = self:getQuad(quadName):getViewport()
-    return self:draw(quadName, x, y, r, (offsetX or 0) - quadWidth / 2, (offsetY or 0) - quadHeight / 2)
+    return self:draw(quadName, x, y, r, (offsetX or 0) - quadWidth / 2, (offsetY or 0) - quadHeight / 2, scaleX, scaleY)
   end
 })
 

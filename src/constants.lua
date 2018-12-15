@@ -30,7 +30,7 @@ local CARD_APEX_LEFT = GAME_LEFT + 0.6 * CARD_HEIGHT
 local CARD_APEX_RIGHT = GAME_RIGHT - 0.6 * CARD_HEIGHT
 
 local TURBO_MODE = false
-local MUTE_ALL_SOUNDS = false
+local MUTE_ALL_SOUNDS = true
 
 return {
   GAME_WIDTH = GAME_WIDTH,

@@ -11,6 +11,7 @@ local SPRITESHEET = SpriteSheet.new('img/ui.png', {
 local RoundResults = Entity.extend({
   x = constants.GAME_WIDTH / 2,
   y = constants.GAME_HEIGHT / 2,
+  renderLayer = 3,
   draw = function(self)
     if self.result == 'blackjack' then
       SPRITESHEET:drawCentered('BLACKJACK', self.x, self.y)

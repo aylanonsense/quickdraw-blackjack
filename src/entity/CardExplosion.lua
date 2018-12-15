@@ -12,6 +12,7 @@ local SPRITESHEET = SpriteSheet.new('img/effects.png', {
 
 local CardExplosion = Entity.extend({
   timeToDeath = 0.4,
+  renderLayer = 7,
   draw = function(self)
     local frame = ({ 1, 2, 3, 3, 4, 4, 5, 5 })[math.min(1 + math.floor(self.timeAlive / 0.05), 8)]
     SPRITESHEET:drawCentered({ 'EXPLOSION', frame }, self.x, self.y, self.rotation)

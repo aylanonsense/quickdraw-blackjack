@@ -8,6 +8,7 @@ local Title = require 'src/entity/Title'
 local Hand = require 'src/entity/Hand'
 local Card = require 'src/entity/Card'
 local Sounds = require 'src/Sounds'
+local SpriteSheet = require 'src/util/SpriteSheet'
 local RoundResults = require 'src/entity/RoundResults'
 local ScoreCalculation = require 'src/entity/ScoreCalculation'
 local RoundIndicator = require 'src/entity/RoundIndicator'
@@ -28,6 +29,23 @@ local playButton
 local roundResults
 local roundNumber
 local isGunLoaded = false
+
+-- Render vars
+local backgroundCycleX = 0
+local backgroundCycleY = 0
+
+-- Spritesheet vars
+local SPRITESHEET = SpriteSheet.new('img/ui.png', {
+  BACKGROUND = { 1, 140, 42, 22 }
+})
+
+-- Render layers
+-- 0: background + shadows
+-- 3: round results
+-- 5: launched cards
+-- 7: card explosiotn
+-- 8: gunshot
+-- 9: cards in hand
 
 -- Entity methods
 Entity.spawn = function(class, args)
@@ -307,6 +325,8 @@ local function load()
 end
 
 local function update(dt)
+  backgroundCycleX = (backgroundCycleX + dt) % 12.0
+  backgroundCycleY = (backgroundCycleY + dt) % 16.0
   -- Update all promises
   Promise.updateActivePromises(dt)
   -- Update all entities
@@ -320,11 +340,29 @@ local function update(dt)
   end
   -- Remove dead entities
   entities = removeDeadEntities(entities)
+  -- Sort entities for rendering
+  table.sort(entities, function(a, b)
+    return a.renderLayer < b.renderLayer
+  end)
 end
 
 local function draw()
-  -- Draw all entities
+  -- Draw background
+  local col, row
+  for col = -2, math.ceil(constants.GAME_WIDTH / 40) + 2 do
+    for row = -2, math.ceil(constants.GAME_HEIGHT / 20) + 2 do
+      local x = 40 * col + (row % 2 == 0 and 0 or 6) + 80 * (backgroundCycleX / 12.0)
+      local y = 20 * row  - 40 * (backgroundCycleY / 16.0)
+      SPRITESHEET:drawCentered('BACKGROUND', x, y, 0, 0, 0, (row % 2 == 0 and 1.0 or -1.0), 1.0)
+    end
+  end
+  -- Draw all entity shadows
   local index, entity
+  for index, entity in ipairs(entities) do
+    love.graphics.setColor(1, 1, 1, 1)
+    entity:drawShadow()
+  end
+  -- Draw all entities
   for index, entity in ipairs(entities) do
     love.graphics.setColor(1, 1, 1, 1)
     entity:draw()

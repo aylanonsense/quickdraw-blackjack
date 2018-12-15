@@ -13,8 +13,10 @@ local Entity = createClass({
   frameRateIndependent = false,
   timeToDeath = 0,
   timeAlive = 0,
+  renderLayer = 5,
   constructor = function(self)
     self.animations = {}
+    self.renderLayer = self.renderLayer + math.random()
   end,
   update = function(self, dt)
     self:applyVelocity(dt)
@@ -27,6 +29,7 @@ local Entity = createClass({
     self.vxPrev = vx
     self.vyPrev = vy
   end,
+  drawShadow = function(self) end,
   applyVelocity = function(self, dt)
     if not self:animationsInclude('x') and not self:animationsInclude('y') then
       if self.frameRateIndependent and self.vxPrev ~= nil and self.vyPrev ~= nil then

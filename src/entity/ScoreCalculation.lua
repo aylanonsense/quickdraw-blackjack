@@ -12,6 +12,7 @@ local SPRITESHEET = SpriteSheet.new('img/ui.png', {
 
 local ScoreCalculation = Entity.extend({
   isShowingScore = false,
+  renderLayer = 3,
   draw = function(self)
     if self.isShowingScore then
       local scoreText = ''..self.score

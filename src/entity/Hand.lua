@@ -12,6 +12,7 @@ local Hand = Entity.extend({
     local index, card
     for index, card in ipairs(self.cards) do
       card.hand = self
+      card.renderLayer = 9 + math.random()
     end
     self.shotCards = {}
   end,
@@ -53,6 +54,7 @@ local Hand = Entity.extend({
     card.vy = 0
     card.vr = 0
     card.gravity = 0
+    card.renderLayer = 9 + math.random()
     card.x = constants.GAME_MIDDLE_X
     card.y = constants.GAME_BOTTOM + 0.6 * constants.CARD_HEIGHT
   end,
