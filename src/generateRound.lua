@@ -1,100 +1,105 @@
 local constants = require 'src/constants'
 local listHelpers = require 'src/util/list'
+local randBucket = require 'src/util/randBucket'
 
 local function generateRoundDifficulty(roundNumber)
-  local allowAces = (roundNumber > 4)
-  local launchDuration = 3 + (33 / (10 + roundNumber))
-  -- Figure out cards in play
-  local minValueInPlay = 2
-  local maxValueInPlay = math.min(4 + roundNumber, 20)
-  local valueInPlay = math.random(minValueInPlay, maxValueInPlay)
-  local numCardsInPlay
-  if valueInPlay <= 5 then
-    -- 2 to 5  points in play
-    numCardsInPlay = roundNumber < 8 and 1 or math.random(1, 2)
-  elseif valueInPlay <= 10 then
-    -- 5 to 10 points in play
-    if roundNumber < 3 then
-      numCardsInPlay = 1
-    elseif roundNumber < 7 then
-      numCardsInPlay = math.random(1, 2)
-    else
-      numCardsInPlay = math.random(1, 3)
-    end
-  elseif valueInPlay <= 15 then
-    -- 11 to 15 points in play
-    if roundNumber < 5 then
-      numCardsInPlay = 2
-    elseif roundNumber < 10 then
-      numCardsInPlay = math.random(2, 3)
-    else
-      numCardsInPlay = math.random(2, 4)
-    end
+  local allowAces = roundNumber >= 9
+
+  -- The time the cards spend in mid-air is stable at first and then begins to drop
+  local launchDuration = 3.0
+  if roundNumber == 5 then
+    launchDuration = 5.5
+  elseif roundNumber <= 9 then
+    launchDuration = 5.0
+  elseif roundNumber <= 14 then
+    launchDuration = 5.5
   else
-    -- 16 to 20 ponts in play
-    if roundNumber < 10 then
-      numCardsInPlay = math.random(2, 3)
-    else
-      numCardsInPlay = math.random(2, 4)
-    end
+    launchDuration = math.max(5.5 - 0.05 * (roundNumber - 14), 3.0)
   end
-  -- Figure out cards in hand
-  local valueInHand = 21 - valueInPlay
-  local numCardsInHand
-  if valueInHand <= 3 then
-    -- 1 to 3 points in hand
-    numCardsInHand = 1
-  elseif valueInHand <= 8 then
-    -- 4 to 8 points in hand
-    numCardsInHand = math.random(1, 2)
-  elseif valueInHand <= 10 then
-    -- 9 to 10 points in hand
-    if roundNumber < 15 then
-      numCardsInHand = math.random(1, 3)
-    else
-      numCardsInHand = math.random(2, 3)
-    end
-  elseif valueInHand <= 13 then
-    -- 11 to 13 points in hand
-    numCardsInHand = math.random(2, 3)
-  else
-    -- 14 to 19 points in hand
-    if roundNumber < 6 then
-      numCardsInHand = 2
-    elseif roundNumber < 10 then
-      numCardsInHand = math.random(2, 3)
-    elseif roundNumber < 15 then
-      numCardsInHand = math.random(2, 4)
-    else
-      numCardsInHand = math.random(3, 4)
-    end
-  end
-  -- Figure out extra cards
-  local numExtraCards
-  if roundNumber == 1 then
-    numExtraCards = 1
-  elseif roundNumber <= 3 then
-    numExtraCards = 2
+
+  -- As rounds go on, the player is asked to shoot more and more cards (1 to 4)
+  local numCardsToShoot
+  if roundNumber <= 2 then
+    numCardsToShoot = 1
+  elseif roundNumber <= 4 then
+    numCardsToShoot = 2
   elseif roundNumber <= 8 then
-    numExtraCards = math.random(2, 3)
-  elseif roundNumber <= 12 then
-    numExtraCards = math.random(2, 4)
-  elseif roundNumber <= 16 then
-    numExtraCards = math.random(3, 5)
-  elseif roundNumber <= 20 then
-    numExtraCards = math.random(4, 6)
+    numCardsToShoot = randBucket({ 50, 50 })
+  elseif roundNumber <= 10 then
+    numCardsToShoot = randBucket({ 25, 75 })
+  elseif roundNumber <= 14 then
+    numCardsToShoot = randBucket({ 25, 50, 25 })
+  elseif roundNumber <= 19 then
+    numCardsToShoot = randBucket({ 10, 50, 35 })
   else
-    numExtraCards = math.random(4, 7)
+    numCardsToShoot = randBucket({ 5, 40, 40, 15 })
   end
-  -- Return the difficulty properties
+
+  -- As rounds go on, the number of cards launched into the air goes up (2 to ...)
+  local numLaunchedCards
+  if roundNumber <= 1 then
+    numLaunchedCards = 2
+  elseif roundNumber <= 3 then
+    numLaunchedCards = 3
+  elseif roundNumber <= 4 then
+    numLaunchedCards = 4
+  elseif roundNumber <= 9 then
+    numLaunchedCards = 5
+  elseif roundNumber <= 11 then
+    numLaunchedCards = 6
+  elseif roundNumber <= 17 then
+    numLaunchedCards = 7
+  elseif roundNumber <= 23 then
+    numLaunchedCards = 8
+  elseif roundNumber <= 29 then
+    numLaunchedCards = 9
+  else
+    numLaunchedCards = 10
+  end
+  numLaunchedCards = math.max(numLaunchedCards, numCardsToShoot)
+  local numExtraCards = numLaunchedCards - numCardsToShoot
+
+  -- The total value of cards the player must shoot tends to increase (1 to 20)
+  local valueToShoot
+  local minValueToShoot = numCardsToShoot * (allowAces and 1 or 2)
+  local maxValueToShoot = math.max(math.min(math.floor(5 + 1.3 * roundNumber), numCardsToShoot * (allowAces and 11 or 10), allowAces and 20 or 19), minValueToShoot)
+  local valueToShoot = math.random(minValueToShoot, maxValueToShoot)
+  if valueToShoot < (maxValueToShoot + minValueToShoot) / 2 then
+    valueToShoot = math.random(minValueToShoot, maxValueToShoot)
+  end
+  local valueInHand = 21 - valueToShoot
+
+  -- The number of cards in the player's hand goes up as rounds go on (2 to 5)
+  local numCardsInHand
+  if roundNumber <= 4 then
+    numCardsInHand = 2
+  elseif roundNumber <= 5 then
+    numCardsInHand = 3
+  elseif roundNumber <= 7 then
+    numCardsInHand = randBucket({ 70, 30 }, { 2, 3 })
+  elseif roundNumber <= 9 then
+    numCardsInHand = randBucket({ 50, 50 }, { 2, 3 })
+  elseif roundNumber <= 11 then
+    numCardsInHand = randBucket({ 35, 65 }, { 2, 3 })
+  elseif roundNumber <= 19 then
+    numCardsInHand = randBucket({ 10, 40, 40, 10 }, { 1, 2, 3, 4 })
+  elseif roundNumber <= 24 then
+    numCardsInHand = randBucket({ 10, 30, 30, 30 }, { 1, 2, 3, 4 })
+  else
+    numCardsInHand = randBucket({ 5, 25, 35, 30, 5 }, { 1, 2, 3, 4, 5 })
+  end
+  local minCardsInHand = math.ceil(valueInHand / (allowAces and 11 or 21))
+  local maxCardsInHand = math.floor(valueInHand / (allowAces and 1 or 2))
+  numCardsInHand = math.max(minCardsInHand, math.min(numCardsInHand, maxCardsInHand))
+
   return {
     allowAces = allowAces,
     launchDuration = launchDuration,
     numCardsInHand = numCardsInHand,
     valueInHand = valueInHand,
-    numCardsInPlay = numCardsInPlay,
-    numExtraCards = numExtraCards,
-    valueInPlay = valueInPlay
+    numCardsToShoot = numCardsToShoot,
+    valueToShoot = valueToShoot,
+    numExtraCards = numExtraCards
   }
 end
 
@@ -109,8 +114,9 @@ local function generateCardValueBundle(numCards, totalValue, allowAces)
     cardValues[i] = minValue
   end
   -- Keep adding until we're done
+  local attemptsLeft = 999
   local valueSoFar = minValue * numCards
-  while valueSoFar < totalValue or valueSoFar == maxValue * numCards do
+  while valueSoFar < totalValue and valueSoFar < maxValue * numCards and attemptsLeft > 0 do
     local index = math.random(1, numCards)
     local maxChange = math.min(totalValue - valueSoFar, maxValue - cardValues[index])
     if maxChange > 0 then
@@ -118,9 +124,15 @@ local function generateCardValueBundle(numCards, totalValue, allowAces)
       cardValues[index] = cardValues[index] + change
       valueSoFar = valueSoFar + change
     end
+    attemptsLeft = attemptsLeft - 1
   end
   -- Return the card values
-  return cardValues
+  if attemptsLeft <= 0 then
+    print('Failed to generate card bundle after 999 attempts!')
+    return nil
+  else
+    return cardValues
+  end
 end
 
 -- Creates card properties
@@ -153,65 +165,89 @@ local function generateCardFromValue(value, cardLookup)
   return generateCard(suitIndex, rankIndex, cardLookup)
 end
 
-local function generateRound(roundNumber)
+local generateRound
+generateRound = function(roundNumber)
+  print('Generating round '..roundNumber)
   local difficulty = generateRoundDifficulty(roundNumber)
   -- Figure out how many cards are where
-  local numCardsInPlay = difficulty.numCardsInPlay
-  local valueInPlay = difficulty.valueInPlay
+  local numCardsToShoot = difficulty.numCardsToShoot
+  local valueToShoot = difficulty.valueToShoot
   local numExtraCards = difficulty.numExtraCards
   local numCardsInHand = difficulty.numCardsInHand
   local valueInHand = difficulty.valueInHand
   local launchDuration = difficulty.launchDuration
   local allowAces = difficulty.allowAces
+  print(' numCardsToShoot = '..numCardsToShoot)
+  print(' valueToShoot = '..valueToShoot)
+  print(' numExtraCards = '..numExtraCards)
+  print(' numCardsInHand = '..numCardsInHand)
+  print(' valueInHand = '..valueInHand)
+  print(' launchDuration = '..launchDuration)
+  print(' allowAces = '..(allowAces and 'true' or 'false'))
   -- Figure out the exact card values
-  local cardValuesInPlay = generateCardValueBundle(numCardsInPlay, valueInPlay, allowAces)
+  print('Generating card bundles...')
+  local cardValuesToShoot = generateCardValueBundle(numCardsToShoot, valueToShoot, allowAces)
+  print(' cardValuesToShoot '..(cardValuesToShoot and 'were generated' or 'is nil'))
   local cardValuesInHand = generateCardValueBundle(numCardsInHand, valueInHand, allowAces)
+  print(' cardValuesInHand '..(cardValuesInHand and 'were generated' or 'is nil'))
+  if not cardValuesToShoot or not cardValuesInHand then
+    print('Failed to generate card bundles! Restarting round generation...')
+    return generateRound(roundNumber)
+  end
   -- Generate card suits, trying to avoid duplicates
+  print('Generating cards...')
   local cardLookup = { {}, {}, {}, {} }
-  local cardsInPlay = listHelpers.map(cardValuesInPlay, function(value)
+  local cardsToShoot = listHelpers.map(cardValuesToShoot, function(value)
     return generateCardFromValue(value, cardLookup)
   end)
   local cardsInHand = listHelpers.map(cardValuesInHand, function(value)
     return generateCardFromValue(value, cardLookup)
   end)
   -- Generate extra cards to confuse the player
+  print('Generating extra cards...')
   local attemptsLeft = 999
   local numExtraCardsGenerated = 0
   while numExtraCardsGenerated < numExtraCards and attemptsLeft > 0 do
     local suitIndex = math.random(1, #constants.CARD_SUITS)
     local rankIndex = math.random(1, #constants.CARD_RANKS)
     if not cardLookup[suitIndex][rankIndex] then
-      table.insert(cardsInPlay, generateCard(suitIndex, rankIndex, cardLookup))
+      table.insert(cardsToShoot, generateCard(suitIndex, rankIndex, cardLookup))
       numExtraCardsGenerated = numExtraCardsGenerated + 1
     end
     attemptsLeft = attemptsLeft - 1
   end
+  if attemptsLeft <= 0 then
+    print('Failed to generate enough extra cards after 999 attempts!')
+  end
   -- Set start points and apexes for each card
+  print('Choosing apex points...')
   local index, cardProps
   local apexAreaWidth = constants.CARD_APEX_RIGHT - constants.CARD_APEX_LEFT
   local apexOffsetX = math.random(0, apexAreaWidth)
-  for index, cardProps in ipairs(cardsInPlay) do
+  for index, cardProps in ipairs(cardsToShoot) do
     apexOffsetX = apexOffsetX + apexAreaWidth * (0.35 + 0.3 * math.random())
     apexOffsetX = apexOffsetX % apexAreaWidth
     cardProps.apexX = constants.CARD_APEX_LEFT + apexOffsetX -- math.random(constants.CARD_APEX_LEFT, constants.CARD_APEX_RIGHT)
-    cardProps.apexY = constants.CARD_APEX_TOP + index / (#cardsInPlay + 1) * (constants.CARD_APEX_BOTTOM - constants.CARD_APEX_TOP) --  math.random(constants.CARD_APEX_TOP, constants.CARD_APEX_BOTTOM)
+    cardProps.apexY = constants.CARD_APEX_TOP + index / (#cardsToShoot + 1) * (constants.CARD_APEX_BOTTOM - constants.CARD_APEX_TOP) --  math.random(constants.CARD_APEX_TOP, constants.CARD_APEX_BOTTOM)
     cardProps.x = math.random(math.max(cardProps.apexX - apexAreaWidth / 2, constants.GAME_LEFT), math.min(cardProps.apexX + apexAreaWidth / 2, constants.GAME_RIGHT))
     cardProps.y = constants.GAME_BOTTOM + 0.7 * constants.CARD_HEIGHT
   end
   -- Shuffle the cards
-  local launchDelayPerCard = math.max(0.35 - 0.023 * #cardsInPlay, 0.05)
-  for index = 1, #cardsInPlay do
-    local swapIndex = math.random(index, #cardsInPlay)
-    local temp = cardsInPlay[index]
-    cardsInPlay[index] = cardsInPlay[swapIndex]
-    cardsInPlay[swapIndex] = temp
-    cardsInPlay[index].launchDelay = launchDelayPerCard * (index - 1)
-    cardsInPlay[index].launchDuration = launchDuration + 0.0 * cardsInPlay[index].launchDelay
+  print('Shuffling cards...')
+  local launchDelayPerCard = math.max(0.35 - 0.027 * #cardsToShoot, 0.05)
+  for index = 1, #cardsToShoot do
+    local swapIndex = math.random(index, #cardsToShoot)
+    local temp = cardsToShoot[index]
+    cardsToShoot[index] = cardsToShoot[swapIndex]
+    cardsToShoot[swapIndex] = temp
+    cardsToShoot[index].launchDelay = launchDelayPerCard * (index - 1)
+    cardsToShoot[index].launchDuration = launchDuration
   end
   -- Return the round properties
+  print('Done generating round '..roundNumber)
   return {
     hand = cardsInHand,
-    cards = cardsInPlay,
+    cards = cardsToShoot,
     launchDuration = launchDuration
   }
 end

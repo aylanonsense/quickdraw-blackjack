@@ -1,7 +1,6 @@
 TODO
 
 tuning:
-  difficulty curve
   round animation timing
 
 features:
@@ -11,6 +10,9 @@ features:
   credits
   sounds
   render layers
+  prefetch all files
+  round done button
+  next round start button
 
 visuals:
   background
