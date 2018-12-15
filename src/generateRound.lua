@@ -177,19 +177,23 @@ generateRound = function(roundNumber)
   local valueInHand = difficulty.valueInHand
   local launchDuration = difficulty.launchDuration
   local allowAces = difficulty.allowAces
-  print(' numCardsToShoot = '..numCardsToShoot)
-  print(' valueToShoot = '..valueToShoot)
-  print(' numExtraCards = '..numExtraCards)
-  print(' numCardsInHand = '..numCardsInHand)
-  print(' valueInHand = '..valueInHand)
-  print(' launchDuration = '..launchDuration)
-  print(' allowAces = '..(allowAces and 'true' or 'false'))
+  print('  numCardsToShoot = '..numCardsToShoot)
+  print('  valueToShoot = '..valueToShoot)
+  print('  numExtraCards = '..numExtraCards)
+  print('  numCardsInHand = '..numCardsInHand)
+  print('  valueInHand = '..valueInHand)
+  print('  launchDuration = '..launchDuration)
+  print('  allowAces = '..(allowAces and 'true' or 'false'))
   -- Figure out the exact card values
   print('Generating card bundles...')
   local cardValuesToShoot = generateCardValueBundle(numCardsToShoot, valueToShoot, allowAces)
-  print(' cardValuesToShoot '..(cardValuesToShoot and 'were generated' or 'is nil'))
+  if cardValuesToShoot then
+    print('  Cards to shoot: '..listHelpers.join(cardValuesToShoot, ', '))
+  end
   local cardValuesInHand = generateCardValueBundle(numCardsInHand, valueInHand, allowAces)
-  print(' cardValuesInHand '..(cardValuesInHand and 'were generated' or 'is nil'))
+  if cardValuesInHand then
+    print('  Cards in hand: '..listHelpers.join(cardValuesInHand, ', '))
+  end
   if not cardValuesToShoot or not cardValuesInHand then
     print('Failed to generate card bundles! Restarting round generation...')
     return generateRound(roundNumber)
