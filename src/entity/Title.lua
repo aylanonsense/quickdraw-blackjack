@@ -14,7 +14,7 @@ local Title = Entity.extend({
     SPRITESHEET:drawCentered('TITLE', self.x, self.y)
   end,
   drawShadow = function(self)
-    SPRITESHEET:drawCentered('SHADOW', self.x - 2, self.y + 3)
+    SPRITESHEET:drawCentered('SHADOW', self.x - 1, self.y + 2)
   end
 })
 

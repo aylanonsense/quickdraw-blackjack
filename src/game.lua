@@ -3,7 +3,7 @@ local generateRound = require 'src/generateRound'
 local listHelpers = require 'src/util/list'
 local Promise = require 'src/util/Promise'
 local Entity = require 'src/entity/Entity'
-local PlayButton = require 'src/entity/PlayButton'
+local StarButton = require 'src/entity/StarButton'
 local Title = require 'src/entity/Title'
 local Hand = require 'src/entity/Hand'
 local Card = require 'src/entity/Card'
@@ -93,9 +93,9 @@ initTitleScreen = function()
   isGunLoaded = true
   Title:spawn({
     x = constants.GAME_MIDDLE_X,
-    y = constants.GAME_HEIGHT * 0.35
+    y = constants.GAME_HEIGHT * 0.31
   })
-  local playButton = PlayButton:spawn({
+  local playButton = StarButton:spawn({
     x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.75,
     onClicked = function(self)
@@ -108,7 +108,7 @@ initTitleScreen = function()
       scenes = { 'title' },
       roundNumber = mostRoundsEncountered,
       displayBest = true,
-      y = playButton.y + 20
+      y = playButton.y + 39
     })
   end
 end
