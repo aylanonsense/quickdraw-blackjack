@@ -6,8 +6,10 @@ local function generateRoundDifficulty(roundNumber)
   local allowAces = roundNumber >= 9
 
   -- The time the cards spend in mid-air is stable at first and then begins to drop
-  local launchDuration = 3.0
-  if roundNumber == 5 then
+  local launchDuration
+  if roundNumber <= 1 then
+    launchDuration = 4.5
+  elseif roundNumber == 5 then
     launchDuration = 5.5
   elseif roundNumber <= 9 then
     launchDuration = 5.0

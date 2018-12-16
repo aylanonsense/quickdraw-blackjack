@@ -43,7 +43,7 @@ local Hand = Entity.extend({
     local index, card
     for index, card in ipairs(self.cards) do
       card:animate({
-        y = { value = constants.GAME_MIDDLE_Y, easing = 'easeIn' }
+        y = { value = constants.GAME_MIDDLE_Y - constants.CARD_HEIGHT / 2, easing = 'easeIn' }
       }, duration)
     end
     return duration
@@ -77,7 +77,7 @@ local Hand = Entity.extend({
         Promise.newActive(0.2 * index)
           :andThen(function()
             Sounds.dealCard:play()
-            card:throw(constants.GAME_MIDDLE_X + (constants.CARD_WIDTH + 2) * i, constants.GAME_MIDDLE_Y + row * (constants.CARD_HEIGHT + 2))
+            card:throw(constants.GAME_MIDDLE_X + (constants.CARD_WIDTH + 2) * i, constants.GAME_MIDDLE_Y - constants.CARD_HEIGHT / 2 + row * (constants.CARD_HEIGHT + 2))
           end)
       end
     end

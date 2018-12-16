@@ -15,19 +15,15 @@ local RoundIndicator = require 'src/entity/RoundIndicator'
 
 -- Scene vars
 local scene
-local isTransitioningScenes
 local initTitleScreen
-local transitionToGameplay
-local initRoundStart
-local transitionToRoundEnd
-local initRoundEnd
+local initRound
 local roundNumber
 local mostRoundsEncountered
 
 -- Entity vars
 local entities
 local hand
-local roundResults
+local roundIndicator
 local isGunLoaded = false
 
 -- Render vars
@@ -93,13 +89,14 @@ initTitleScreen = function()
   isGunLoaded = true
   Title:spawn({
     x = constants.GAME_MIDDLE_X,
-    y = constants.GAME_HEIGHT * 0.31
+    y = constants.GAME_MIDDLE_Y - 40
   })
   local playButton = StarButton:spawn({
     x = constants.GAME_MIDDLE_X,
-    y = constants.GAME_HEIGHT * 0.75,
+    y = constants.GAME_HEIGHT * 0.79,
+    text = 'play',
     onClicked = function(self)
-      transitionToGameplay()
+      initRound()
     end
   })
   Sounds.titleLoop:play()
@@ -111,24 +108,15 @@ initTitleScreen = function()
       y = playButton.y + 39
     })
   end
+  if constants.TURBO_MODE then
+    initRound()
+  end
 end
 
-transitionToGameplay = function()
-  if not isTransitioningScenes then
-    isTransitioningScenes = true
-    Promise.newActive(0)
-      :andThen(function()
-        isTransitioningScenes = false
-        initRoundStart()
-      end)
-    end
-end
-
-initRoundStart = function()
+initRound = function()
   isGunLoaded = false
-  scene = 'round-start'
-  mostRoundsEncountered = math.max(mostRoundsEncountered, roundNumber)
-  RoundIndicator:spawn({
+  scene = 'round'
+  roundIndicator = RoundIndicator:spawn({
     roundNumber = roundNumber
   })
   -- Generate a new round
@@ -205,7 +193,7 @@ initRoundStart = function()
       local scoreCalculation = ScoreCalculation:spawn({
         score = hand:getSumValue(),
         x = constants.GAME_MIDDLE_X,
-        y = constants.GAME_MIDDLE_Y - constants.CARD_HEIGHT / 2 - 17
+        y = constants.GAME_MIDDLE_Y - constants.CARD_HEIGHT / 2 - 30
       })
       Sounds.scoreCounter:play()
       return Promise.newActive(1.0)
@@ -221,70 +209,51 @@ initRoundStart = function()
         result = 'blackjack'
         Sounds.blackjack:play()
         playGunshotSound(true)
-      elseif value < 21 then
-        result = 'miss'
-        Sounds.gameOver:play() -- TODO: card explosion/ruffling
-      elseif value > 21 then
-        result = 'bust'
-        Sounds.gameOver:play() -- TODO: card explosion/ruffling
+        local nextButton
+        nextButton = StarButton:spawn({
+          x = constants.GAME_MIDDLE_X,
+          y = constants.GAME_HEIGHT * 0.8,
+          text = 'next',
+          scenes = { 'round' },
+          onClicked = function(self)
+            roundNumber = roundNumber + 1
+            entities = { nextButton }
+            initRound()
+          end
+        })
+      else
+        if value < 21 then
+          result = 'miss'
+          Sounds.gameOver:play() -- TODO: card explosion/ruffling
+        elseif value > 21 then
+          result = 'bust'
+          Sounds.gameOver:play() -- TODO: card explosion/ruffling
+        end
+        Promise.newActive(4.5)
+          :andThen(function()
+            local value = hand:getSumValue()
+            if value ~= 21 then
+              if roundNumber > mostRoundsEncountered then
+                mostRoundsEncountered = roundNumber
+                roundIndicator.isNewHighScore = true
+              end
+              local doneButton
+              doneButton = StarButton:spawn({
+                x = constants.GAME_MIDDLE_X,
+                y = constants.GAME_HEIGHT * 0.8,
+                text = 'done',
+                onClicked = function(self)
+                  entities = { doneButton }
+                  initTitleScreen()
+                end
+              })
+            end
+          end)
       end
       RoundResults:spawn({
         result = result
       })
-      hand:explode(value == 21 and 3 or 1)
-    end)
-    :andThen(2.0)
-    :andThen(function()
-      local value = hand:getSumValue()
-      entities = {}
-      if value == 21 then
-        roundNumber = roundNumber + 1
-        initRoundStart()
-      else
-        return Promise.newActive(8.0)
-        :andThen(function()
-          initTitleScreen()
-        end)
-      end
-    end)
-end
-
-transitionToRoundEnd = function()
-  if not isTransitioningScenes then
-    isTransitioningScenes = true
-    Promise.newActive(1)
-      :andThen(function()
-        isTransitioningScenes = false
-        initRoundEnd()
-      end)
-  end
-end
-
-initRoundEnd = function()
-  scene = 'round-end'
-  local handValue = hand:getSumValue()
-  local isWinningHand = (handValue == 21)
-  local result
-  if handValue == 21 and #hand.cards == 2 then
-    result = 'blackjack'
-  elseif handValue == 21 then
-    result = 'win'
-  elseif handValue > 21 then
-    result = 'bust'
-  else
-    result = 'miss'
-  end
-  roundResults = RoundResults:spawn({
-    result = result
-  })
-  Promise.newActive(1)
-    :andThen(function()
-      entities = {}
-      if isWinningHand then
-        -- TODO
-      else
-        initTitleScreen()
-      end
+      hand:explode(value == 21 and 3 or 1.7)
     end)
 end
 
@@ -320,7 +289,6 @@ end
 -- Main methods
 local function load()
   scene = nil
-  isTransitioningScenes = false
   mostRoundsEncountered = 0
   -- Init sounds
   initSounds()
@@ -338,7 +306,7 @@ local function update(dt)
   -- Update all entities
   local index, entity
   for index, entity in ipairs(entities) do
-    if entity.isAlive and (isTransitioningScenes or entity:checkScene(scene)) then
+    if entity:checkScene(scene) and entity.isAlive then
       entity.timeAlive = entity.timeAlive + dt
       entity:update(dt)
       entity:countDownToDeath(dt)

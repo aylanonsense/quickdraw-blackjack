@@ -1,29 +1,22 @@
 TODO
 
-tuning:
-  round animation timing
-
 features:
   persist personal best
-  button between rounds
   tutorial/instructions
-  credits
   sounds
-  render layers
   prefetch all files
   round done button
-  next round start button
+  pause button
+  mute music button
+  mute sounds button
 
 visuals:
   title screen
   card particles
-  shoot play button
   missed shot animation
   more bullet hole sprites
   background light-up on shot
   beginning title screen transition
-  transition from title screen to first round
-  transition to title screen from game over
 
 extras:
   lives
