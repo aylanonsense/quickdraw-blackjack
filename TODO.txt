@@ -4,7 +4,7 @@ tuning:
   round animation timing
 
 features:
-  personal best
+  persist personal best
   button between rounds
   tutorial/instructions
   credits
@@ -15,12 +15,11 @@ features:
   next round start button
 
 visuals:
-  background
   title screen
-  holes in cards
   card particles
   shoot play button
   missed shot animation
+  more bullet hole sprites
   background light-up on shot
   beginning title screen transition
   transition from title screen to first round

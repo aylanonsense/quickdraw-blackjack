@@ -21,13 +21,13 @@ local transitionToGameplay
 local initRoundStart
 local transitionToRoundEnd
 local initRoundEnd
+local roundNumber
+local mostRoundsEncountered
 
 -- Entity vars
 local entities
 local hand
-local playButton
 local roundResults
-local roundNumber
 local isGunLoaded = false
 
 -- Render vars
@@ -95,7 +95,7 @@ initTitleScreen = function()
     x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.35
   })
-  playButton = PlayButton:spawn({
+  local playButton = PlayButton:spawn({
     x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.75,
     onClicked = function(self)
@@ -103,9 +103,13 @@ initTitleScreen = function()
     end
   })
   Sounds.titleLoop:play()
-  -- Debug
-  if constants.TURBO_MODE then
-    transitionToGameplay()
+  if mostRoundsEncountered > 0 then
+    RoundIndicator:spawn({
+      scenes = { 'title' },
+      roundNumber = mostRoundsEncountered,
+      displayBest = true,
+      y = playButton.y + 20
+    })
   end
 end
 
@@ -123,6 +127,7 @@ end
 initRoundStart = function()
   isGunLoaded = false
   scene = 'round-start'
+  mostRoundsEncountered = math.max(mostRoundsEncountered, roundNumber)
   RoundIndicator:spawn({
     roundNumber = roundNumber
   })
@@ -316,6 +321,7 @@ end
 local function load()
   scene = nil
   isTransitioningScenes = false
+  mostRoundsEncountered = 0
   -- Init sounds
   initSounds()
   -- Initialize game vars
