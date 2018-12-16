@@ -210,6 +210,7 @@ initRound = function()
         result = 'blackjack'
         Sounds.blackjack:play()
         playGunshotSound(true)
+        isGunLoaded = true
         local nextButton
         nextButton = StarButton:spawn({
           x = constants.GAME_MIDDLE_X,
@@ -220,6 +221,7 @@ initRound = function()
             roundNumber = roundNumber + 1
             entities = { nextButton }
             initRound()
+            isGunLoaded = false
           end
         })
       else
@@ -235,18 +237,23 @@ initRound = function()
             local value = hand:getSumValue()
             if value ~= 21 then
               if roundNumber > mostRoundsEncountered then
+                Sounds.newPersonalBest:play()
                 mostRoundsEncountered = roundNumber
                 roundIndicator.isNewHighScore = true
                 saveFile.save('quickdraw-blackjack.dat', {
                   best = mostRoundsEncountered
                 })
+              else
+                Sounds.postGameOverNoPersonalBest:play()
               end
               local doneButton
+              isGunLoaded = true
               doneButton = StarButton:spawn({
                 x = constants.GAME_MIDDLE_X,
                 y = constants.GAME_HEIGHT * 0.8,
                 text = 'done',
                 onClicked = function(self)
+                  isGunLoaded = false
                   entities = { doneButton }
                   initTitleScreen()
                 end
@@ -286,6 +293,8 @@ local function initSounds()
   Sounds.dealCard = Sound:new("snd/deal_card.mp3", 5)
   Sounds.scoreCounter = Sound:new("snd/score_counter.mp3", 1)
   Sounds.handSlide = Sound:new("snd/card_slide.mp3", 1)
+  Sounds.postGameOverNoPersonalBest = Sound:new("snd/post_game_over_no_personal_best.mp3", 1)
+  Sounds.newPersonalBest = Sound:new("snd/new_personal_best.mp3", 1)
   Sounds.handSlide:setVolume(0.2)
   Sounds.gameOver = Sound:new("snd/game_over.mp3")
 end
