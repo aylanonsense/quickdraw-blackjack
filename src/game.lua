@@ -280,7 +280,7 @@ local function initSounds()
   Sounds.unholster = Sound:new("snd/gun_unholster.mp3", 1)
   Sounds.launch = Sound:new("snd/launch.mp3", 15)
   Sounds.blackjack = Sound:new("snd/impact.mp3", 1) -- TODO: design a sound
-  Sounds.titleLoop = Sound:new("snd/title_loop.mp3", 1)
+  Sounds.titleLoop = Sound:new("snd/title_loop.ogg", 1)
   Sounds.titleLoop:setLooping(true)
   Sounds.roundStart = Sound:new("snd/honky-tonk-round-start.wav")
   Sounds.dealCard = Sound:new("snd/deal_card.mp3", 5)
