@@ -12,6 +12,7 @@ local SpriteSheet = require 'src/util/SpriteSheet'
 local RoundResults = require 'src/entity/RoundResults'
 local ScoreCalculation = require 'src/entity/ScoreCalculation'
 local RoundIndicator = require 'src/entity/RoundIndicator'
+local saveFile = require 'src/util/saveFile'
 
 -- Scene vars
 local scene
@@ -105,7 +106,7 @@ initTitleScreen = function()
       scenes = { 'title' },
       roundNumber = mostRoundsEncountered,
       displayBest = true,
-      y = playButton.y + 39
+      y = playButton.y + 36
     })
   end
   if constants.TURBO_MODE then
@@ -236,6 +237,9 @@ initRound = function()
               if roundNumber > mostRoundsEncountered then
                 mostRoundsEncountered = roundNumber
                 roundIndicator.isNewHighScore = true
+                saveFile.save('quickdraw-blackjack.dat', {
+                  best = mostRoundsEncountered
+                })
               end
               local doneButton
               doneButton = StarButton:spawn({
@@ -288,8 +292,11 @@ end
 
 -- Main methods
 local function load()
+  -- Load save data
+  local saveData = saveFile.load('quickdraw-blackjack.dat')
+  -- Init vars
   scene = nil
-  mostRoundsEncountered = 0
+  mostRoundsEncountered = saveData.best and tonumber(saveData.best) or 0
   -- Init sounds
   initSounds()
   -- Initialize game vars

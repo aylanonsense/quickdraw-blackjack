@@ -7,10 +7,8 @@ local function generateRoundDifficulty(roundNumber)
 
   -- The time the cards spend in mid-air is stable at first and then begins to drop
   local launchDuration
-  if roundNumber <= 1 then
+  if roundNumber <= 2 then
     launchDuration = 4.5
-  elseif roundNumber == 5 then
-    launchDuration = 5.5
   elseif roundNumber <= 9 then
     launchDuration = 5.0
   elseif roundNumber <= 14 then
@@ -75,7 +73,7 @@ local function generateRoundDifficulty(roundNumber)
   local numCardsInHand
   if roundNumber <= 4 then
     numCardsInHand = 2
-  elseif roundNumber <= 5 then
+  elseif roundNumber <= 6 then
     numCardsInHand = 3
   elseif roundNumber <= 7 then
     numCardsInHand = randBucket({ 70, 30 }, { 2, 3 })
