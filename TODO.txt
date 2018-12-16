@@ -1,7 +1,6 @@
 TODO
 
 features:
-  persist personal best
   tutorial/instructions
   sounds
   prefetch all files
@@ -9,6 +8,9 @@ features:
   pause button
   mute music button
   mute sounds button
+
+tweaks:
+  bigger star button hitbox
 
 visuals:
   title screen

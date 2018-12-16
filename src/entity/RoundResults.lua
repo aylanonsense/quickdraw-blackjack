@@ -3,7 +3,8 @@ local Entity = require 'src/entity/Entity'
 local SpriteSheet = require 'src/util/SpriteSheet'
 
 local SPRITESHEET = SpriteSheet.new('img/ui.png', {
-  BLACKJACK = { 110, 22, 89, 16 },
+  BLACKJACK = { 1, 282, 100, 20 },
+  BLACKJACK_SHADOW = { 102, 282, 100, 20},
   BUST = { 1, 95, 59, 22 },
   MISS = { 61, 95, 59, 22 },
   BLAM = { 1, 231, 105, 50 },
@@ -35,7 +36,7 @@ local RoundResults = Entity.extend({
   end,
   drawShadow = function(self)
     if self.result == 'blackjack' then
-      -- TODO
+      SPRITESHEET:drawCentered('BLACKJACK_SHADOW', self.x - 1, self.y + 2, 0, 0, 0, self.scale, self.scale)
     else
       SPRITESHEET:drawCentered('BLAM_SHADOW', self.x - 1, self.y + 2, 0, 0, 0, self.scale, self.scale)
     end
