@@ -184,7 +184,9 @@ local Card = Entity.extend({
         x = x,
         y = y
       })
-      self.hand:addShotCard(self)
+      if self.hand then
+        self.hand:addShotCard(self)
+      end
       Sounds.impact:play()
     end
   end,
