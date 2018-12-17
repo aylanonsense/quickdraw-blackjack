@@ -90,7 +90,7 @@ local function playGunshotSound(isClickInsideGame)
 end
 
 -- Scene methods
-initTitleScreen = function()
+initTitleScreen = function(firstLoad)
   scene = 'title'
   roundNumber = 1
   isGunLoaded = true
@@ -102,6 +102,7 @@ initTitleScreen = function()
     x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.79,
     text = 'play',
+    hiddenTime = firstLoad and 0.0 or 0.5,
     onClicked = function(self)
       if not hasSeenTutorial then
         initTutorial()
@@ -342,7 +343,7 @@ local function load()
   -- Initialize game vars
   entities = {}
   -- Start at the title screen
-  initTitleScreen()
+  initTitleScreen(true)
 end
 
 local function update(dt)
