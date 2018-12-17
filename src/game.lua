@@ -132,7 +132,7 @@ initTutorial = function()
     x = constants.GAME_MIDDLE_X,
     y = constants.GAME_HEIGHT * 0.83,
     text = 'play',
-    hiddenTime = 2.0,
+    hiddenTime = 4.0,
     onClicked = function(self)
       hasSeenTutorial = true
       saveFile.save('quickdraw-blackjack.dat', {

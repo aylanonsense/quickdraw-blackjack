@@ -27,7 +27,7 @@ local RoundIndicator = Entity.extend({
       x = x + 18
     end
     if self.isNewHighScore and self.timeAlive%0.8 < 0.5 then
-      SPRITESHEET:drawCentered('NEW_BEST', self.x, self.y + 14)
+      SPRITESHEET:drawCentered('NEW_BEST', self.x + 2, self.y + 14)
     end
     SPRITESHEET:draw('ROUND', x - 23, self.y)
     local roundText = ''..self.roundNumber
