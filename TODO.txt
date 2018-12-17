@@ -1,9 +1,6 @@
 TODO
 
 features:
-  tutorial/instructions
-  sounds
-  prefetch all files
   round done button
   pause button
   mute music button
