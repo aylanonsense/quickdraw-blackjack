@@ -10,7 +10,6 @@ tweaks:
   bigger star button hitbox
 
 visuals:
-  title screen
   card particles
   missed shot animation
   more bullet hole sprites
@@ -18,7 +17,6 @@ visuals:
   beginning title screen transition
 
 extras:
-  lives
   widgets to shoot (bottles?)
   score
   checkpoints

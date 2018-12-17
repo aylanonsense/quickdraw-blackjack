@@ -7,6 +7,7 @@ local StarButton = require 'src/entity/StarButton'
 local Title = require 'src/entity/Title'
 local TutorialScreen = require 'src/entity/TutorialScreen'
 local Hand = require 'src/entity/Hand'
+local Lives = require 'src/entity/Lives'
 local Card = require 'src/entity/Card'
 local Sounds = require 'src/Sounds'
 local SpriteSheet = require 'src/util/SpriteSheet'
@@ -30,6 +31,7 @@ local mostRoundsEncountered
 -- Entity vars
 local entities
 local hand
+local lives
 local roundIndicator
 local isGunLoaded = false
 
@@ -107,6 +109,7 @@ initTitleScreen = function(firstLoad)
       if not hasSeenTutorial then
         initTutorial()
       else
+        lives = Lives:spawn({})
         initRound()
       end
     end
@@ -119,9 +122,6 @@ initTitleScreen = function(firstLoad)
       displayBest = true,
       y = playButton.y + 36
     })
-  end
-  if constants.TURBO_MODE then
-    initRound()
   end
 end
 
@@ -139,6 +139,7 @@ initTutorial = function()
         best = mostRoundsEncountered,
         hasSeenTutorial = hasSeenTutorial and 'true' or 'false'
       })
+      lives = Lives:spawn({})
       initRound()
     end
   })
@@ -148,6 +149,7 @@ initRound = function()
   scene = 'round'
   isGunLoaded = false
   roundIndicator = RoundIndicator:spawn({
+    x = constants.GAME_LEFT + 26,
     roundNumber = roundNumber
   })
   -- Generate a new round
@@ -249,7 +251,7 @@ initRound = function()
           scenes = { 'round' },
           onClicked = function(self)
             roundNumber = roundNumber + 1
-            entities = { nextButton }
+            entities = { lives, nextButton }
             initRound()
             isGunLoaded = false
           end
@@ -257,15 +259,36 @@ initRound = function()
       else
         if value < 21 then
           result = 'miss'
-          Sounds.gameOver:play() -- TODO: card explosion/ruffling
         elseif value > 21 then
           result = 'bust'
-          Sounds.gameOver:play() -- TODO: card explosion/ruffling
         end
-        Promise.newActive(4.5)
+        lives.isBlinking = true
+        Promise.newActive(2.5)
           :andThen(function()
-            local value = hand:getSumValue()
-            if value ~= 21 then
+            lives.isBlinking = false
+            lives.numHearts = lives.numHearts - 1
+          end)
+        if lives.numHearts > 1 then
+          Sounds.loseRound:play()
+          Promise.newActive(2.5)
+            :andThen(function()
+              local redoButton
+              isGunLoaded = true
+              redoButton = StarButton:spawn({
+                x = constants.GAME_MIDDLE_X,
+                y = constants.GAME_HEIGHT * 0.8,
+                text = 'redo',
+                onClicked = function(self)
+                  isGunLoaded = false
+                  entities = { lives, redoButton }
+                  initRound()
+                end
+              })
+            end)
+        else
+          Sounds.gameOver:play()
+          Promise.newActive(4.5)
+            :andThen(function()
               if roundNumber > mostRoundsEncountered then
                 Sounds.newPersonalBest:play()
                 mostRoundsEncountered = roundNumber
@@ -285,12 +308,12 @@ initRound = function()
                 text = 'done',
                 onClicked = function(self)
                   isGunLoaded = false
-                  entities = { doneButton }
+                  entities = { lives, doneButton }
                   initTitleScreen()
                 end
               })
-            end
-          end)
+            end)
+          end
       end
       RoundResults:spawn({
         result = result
@@ -325,6 +348,7 @@ local function initSounds()
   Sounds.scoreCounter = Sound:new("snd/score_counter.mp3", 1)
   Sounds.handSlide = Sound:new("snd/card_slide.mp3", 1)
   Sounds.postGameOverNoPersonalBest = Sound:new("snd/post_game_over_no_personal_best.mp3", 1)
+  Sounds.loseRound = Sound:new("snd/lose_round.mp3", 1)
   Sounds.newPersonalBest = Sound:new("snd/new_personal_best.mp3", 1)
   Sounds.handSlide:setVolume(0.2)
   Sounds.gameOver = Sound:new("snd/game_over.mp3")

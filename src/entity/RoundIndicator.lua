@@ -16,7 +16,7 @@ local SPRITESHEET = SpriteSheet.new('img/ui.png', {
 
 local RoundIndicator = Entity.extend({
   x = constants.GAME_MIDDLE_X,
-  y = constants.GAME_TOP + 2,
+  y = constants.GAME_TOP + 3,
   renderLayer = 3,
   displayBest = false,
   isNewHighScore = false,

@@ -8,7 +8,8 @@ local SPRITESHEET = SpriteSheet.new('img/ui.png', {
   SHADOW = { 65, 163, 63, 67 },
   PLAY = { 129, 163, 33, 13 },
   DONE = { 129, 177, 33, 13 },
-  NEXT = { 129, 191, 33, 13 }
+  NEXT = { 129, 191, 33, 13 },
+  REDO = { 129, 149, 33, 13 }
 })
 
 local StarButton = Entity.extend({
@@ -41,6 +42,8 @@ local StarButton = Entity.extend({
         SPRITESHEET:drawCentered('DONE', self.x, self.y, self.rotation)
       elseif self.text == 'next' then
         SPRITESHEET:drawCentered('NEXT', self.x, self.y, self.rotation)
+      elseif self.text == 'redo' then
+        SPRITESHEET:drawCentered('REDO', self.x, self.y, self.rotation)
       end
     end
   end,

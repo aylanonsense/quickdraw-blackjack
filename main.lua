@@ -37,6 +37,7 @@ if CASTLE_PREFETCH then
     'src/entity/Entity.lua',
     'src/entity/Gunshot.lua',
     'src/entity/Hand.lua',
+    'src/entity/Lives.lua',
     'src/entity/RoundIndicator.lua',
     'src/entity/RoundResults.lua',
     'src/entity/ScoreCalculation.lua',
