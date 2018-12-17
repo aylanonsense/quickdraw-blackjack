@@ -19,6 +19,7 @@ local StarButton = Entity.extend({
   vr = 0.0,
   rotation = 0.0,
   renderLayer = 10,
+  hiddenTime = 0.0,
   constructor = function(self)
     Entity.constructor(self)
     self.shape = love.physics.newRectangleShape(self.width, self.height)
@@ -32,24 +33,28 @@ local StarButton = Entity.extend({
     end
   end,
   draw = function(self)
-    SPRITESHEET:drawCentered('STAR', self.x, self.y, self.rotation)
-    if self.text == 'play' then
-      SPRITESHEET:drawCentered('PLAY', self.x, self.y, self.rotation)
-    elseif self.text == 'done' then
-      SPRITESHEET:drawCentered('DONE', self.x, self.y, self.rotation)
-    elseif self.text == 'next' then
-      SPRITESHEET:drawCentered('NEXT', self.x, self.y, self.rotation)
+    if self.timeAlive >= self.hiddenTime then
+      SPRITESHEET:drawCentered('STAR', self.x, self.y, self.rotation)
+      if self.text == 'play' then
+        SPRITESHEET:drawCentered('PLAY', self.x, self.y, self.rotation)
+      elseif self.text == 'done' then
+        SPRITESHEET:drawCentered('DONE', self.x, self.y, self.rotation)
+      elseif self.text == 'next' then
+        SPRITESHEET:drawCentered('NEXT', self.x, self.y, self.rotation)
+      end
     end
   end,
   drawShadow = function(self)
-    SPRITESHEET:drawCentered('SHADOW', self.x - 1, self.y + 2, self.rotation)
+    if self.timeAlive >= self.hiddenTime then
+      SPRITESHEET:drawCentered('SHADOW', self.x - 1, self.y + 2, self.rotation)
+    end
   end,
   -- Checks to see if the point x,y is contained within this button
   containsPoint = function(self, x, y)
     return self.shape:testPoint(self.x, self.y, 0, x, y)
   end,
   onMousePressed = function(self, x, y)
-    if self:containsPoint(x, y) then
+    if self:containsPoint(x, y) and self.timeAlive >= self.hiddenTime then
       if not self.hasBeenClicked  then
         self.hasBeenClicked = true
         self.renderLayer = 11 + math.random()

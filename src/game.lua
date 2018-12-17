@@ -5,6 +5,7 @@ local Promise = require 'src/util/Promise'
 local Entity = require 'src/entity/Entity'
 local StarButton = require 'src/entity/StarButton'
 local Title = require 'src/entity/Title'
+local TutorialScreen = require 'src/entity/TutorialScreen'
 local Hand = require 'src/entity/Hand'
 local Card = require 'src/entity/Card'
 local Sounds = require 'src/Sounds'
@@ -14,11 +15,16 @@ local ScoreCalculation = require 'src/entity/ScoreCalculation'
 local RoundIndicator = require 'src/entity/RoundIndicator'
 local saveFile = require 'src/util/saveFile'
 
+-- Clear save file
+-- saveFile.save('quickdraw-blackjack.dat', {})
+
 -- Scene vars
 local scene
 local initTitleScreen
+local initTutorial
 local initRound
 local roundNumber
+local hasSeenTutorial
 local mostRoundsEncountered
 
 -- Entity vars
@@ -97,7 +103,11 @@ initTitleScreen = function()
     y = constants.GAME_HEIGHT * 0.79,
     text = 'play',
     onClicked = function(self)
-      initRound()
+      if not hasSeenTutorial then
+        initTutorial()
+      else
+        initRound()
+      end
     end
   })
   Sounds.titleLoop:play()
@@ -114,9 +124,28 @@ initTitleScreen = function()
   end
 end
 
+initTutorial = function()
+  scene = 'tutorial'
+  TutorialScreen:spawn({})
+  StarButton:spawn({
+    x = constants.GAME_MIDDLE_X,
+    y = constants.GAME_HEIGHT * 0.83,
+    text = 'play',
+    hiddenTime = 2.0,
+    onClicked = function(self)
+      hasSeenTutorial = true
+      saveFile.save('quickdraw-blackjack.dat', {
+        best = mostRoundsEncountered,
+        hasSeenTutorial = hasSeenTutorial and 'true' or 'false'
+      })
+      initRound()
+    end
+  })
+end
+
 initRound = function()
-  isGunLoaded = false
   scene = 'round'
+  isGunLoaded = false
   roundIndicator = RoundIndicator:spawn({
     roundNumber = roundNumber
   })
@@ -238,7 +267,8 @@ initRound = function()
                 mostRoundsEncountered = roundNumber
                 roundIndicator.isNewHighScore = true
                 saveFile.save('quickdraw-blackjack.dat', {
-                  best = mostRoundsEncountered
+                  best = mostRoundsEncountered,
+                  hasSeenTutorial = hasSeenTutorial and 'true' or 'false'
                 })
               end
               local doneButton
@@ -297,6 +327,7 @@ local function load()
   -- Init vars
   scene = nil
   mostRoundsEncountered = saveData.best and tonumber(saveData.best) or 0
+  hasSeenTutorial = saveData.hasSeenTutorial == 'true'
   -- Init sounds
   initSounds()
   -- Initialize game vars
