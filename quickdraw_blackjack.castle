@@ -1,0 +1,7 @@
+---
+main: main.lua
+name: Quickdraw Blackjack
+username: bridgs
+primaryColor: #C0C0C0
+coverImageUrl: https://github.com/bridgs/love-cards/blob/master/logo.png
+description: A game of blackjack... with a twist!
