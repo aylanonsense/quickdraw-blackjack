@@ -2,7 +2,7 @@
 main: main.lua
 name: Quickdraw Blackjack
 username: bridgs
-primaryColor: DF7126
+primaryColor: B55C29
 coverImage: logo.png
 description: A game of blackjack... with a twist!
 dimensions: 125x220
