@@ -13,7 +13,7 @@ local SCREEN_WIDTH = 400
 local SCREEN_HEIGHT = 700
 
 -- Render dimenisions reflect how the game should be drawn to the canvas
-local RENDER_SCALE = math.floor(math.min(SCREEN_WIDTH / GAME_WIDTH, SCREEN_HEIGHT / GAME_HEIGHT))
+local RENDER_SCALE = 1
 local RENDER_WIDTH = RENDER_SCALE * GAME_WIDTH
 local RENDER_HEIGHT = RENDER_SCALE * GAME_HEIGHT
 local RENDER_X = (SCREEN_WIDTH - RENDER_WIDTH) / 2
